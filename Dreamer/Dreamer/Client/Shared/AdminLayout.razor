@@ -1,0 +1,184 @@
+﻿@inherits LayoutComponentBase
+@using System.Security.Claims
+@inject NavigationManager NavigationManager
+<RadzenDialog/>
+<RadzenNotification/>
+<RadzenContextMenu/>
+<RadzenTooltip/>
+<style>
+#layoutSidenav {
+    display: flex;
+}
+.sb-nav-fixed #layoutSidenav #layoutSidenav_nav {
+    width: 225px;
+    height: 100vh;
+    z-index: 1038;
+}
+
+</style>
+@using Blazored.Toast.Configuration
+<!-- Admin -->
+    <link href="admin/css/styles.css" rel="stylesheet">
+    <link href="admin/css/admin-style.css" rel="stylesheet">
+
+    <!-- Vendor Stylesheets -->
+    <link href="front/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="front/vendor/fontawesome-free/css/all.min.css" rel="stylesheet">
+<BlazoredToasts Position="ToastPosition.BottomRight"
+                Timeout="6"
+                IconType="IconType.FontAwesome"
+                SuccessClass="success-toast-override"
+                SuccessIcon="fa fa-thumbs-up"
+                ErrorIcon="fa fa-bug" />
+       
+<AuthorizeView>
+    <Authorized>
+        <nav class="sb-topnav navbar navbar-expand navbar-light bg-clr">
+            <a class="navbar-brand logo-brand" href="/page/dashboard">Grocery Mart</a>
+			<button class="btn btn-link btn-sm order-1 order-lg-0" @onclick="() => UISwitcher = !UISwitcher" id="sidebarToggle" href="/page/dashboard"><i class="fas fa-bars"></i></button>
+            <a href="/page/dashboard" class="frnt-link"><i class="fas fa-external-link-alt"></i>Home</a>
+            <LoginDisplay></LoginDisplay>
+            
+        </nav>
+                <div id="layoutSidenav">
+         <div id="layoutSidenav_nav" style="display: @Display;">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <a class="nav-link active" href="/page/dashboard">
+								<div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                Dashboard
+							</a>
+							<a class="nav-link" href="/page/orders">
+								<div class="sb-nav-link-icon"><i class="fas fa-cart-arrow-down"></i></div>
+                                Orders
+							</a>
+							<a class="nav-link active" href="/page/productlist">
+								<div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                Product
+							</a>
+                             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+								<div class="sb-nav-link-icon"><i class="fas fa-newspaper"></i></div>
+                                Manage Order
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+							</a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+									<a class="nav-link sub_nav_link" href="/page/pendingorders">Pending Order</a>
+									<a class="nav-link sub_nav_link" href="/page/ongoingorders">OnGoing Order</a>
+									<a class="nav-link sub_nav_link" href="/page/deliveredorders">Delivered Order</a>
+									<a class="nav-link sub_nav_link" href="/page/rejectorder">Rejected Orders</a>
+								</nav>
+                            </div>		
+							<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLocations" aria-expanded="false" aria-controls="collapseLocations">
+								<div class="sb-nav-link-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                Setting
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+							</a>
+                            <div class="collapse" id="collapseLocations" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+									<a class="nav-link sub_nav_link" href="/page/categorylist">Category</a>
+									<a class="nav-link sub_nav_link" href="/page/brandlist">Brand</a>
+									<a class="nav-link sub_nav_link" href="/page/arealist">Area</a>
+									<a class="nav-link sub_nav_link" href="/page/countrylist">Country</a>
+									<a class="nav-link sub_nav_link" href="/page/statelist">State</a>
+								</nav>
+                            </div>		
+							@*<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseAreas" aria-expanded="false" aria-controls="collapseAreas">
+								<div class="sb-nav-link-icon"><i class="fas fa-map-marked-alt"></i></div>
+                                Ecommerce
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+							</a>*@
+                            @*<div class="collapse" id="collapseAreas" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+									<a class="nav-link sub_nav_link" href="areas.html">Coupon</a>
+									<a class="nav-link sub_nav_link" href="add_area.html">Shipping</a>
+									<a class="nav-link sub_nav_link" href="add_area.html">Tax</a>
+									<a class="nav-link sub_nav_link" href="add_area.html">Payment</a>
+								</nav>
+                            </div>*@
+							<a class="nav-link" href="/page/customerlist">
+								<div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                Customers
+							</a>
+							<a class="nav-link" href="/page/deliveryboylist">
+								<div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                DeliveryBoy
+							</a>
+							@*<a class="nav-link" href="offers.html">
+								<div class="sb-nav-link-icon"><i class="fas fa-gift"></i></div>
+                                Offers
+							</a>
+							<a class="nav-link" href="offers.html">
+								<div class="sb-nav-link-icon"><i class="fas fa-gift"></i></div>
+                                Delivery Boy
+							</a>
+							<a class="nav-link" href="offers.html">
+								<div class="sb-nav-link-icon"><i class="fas fa-gift"></i></div>
+                                Offers
+							</a>*@
+							<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseSettings" aria-expanded="false" aria-controls="collapseSettings">
+								<div class="sb-nav-link-icon"><i class="fas fa-cog"></i></div>
+                               App Setting
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+							</a>
+                            <div class="collapse" id="collapseSettings" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+									@*<a class="nav-link sub_nav_link" href="general_setting.html">Users</a>*@
+									<a class="nav-link sub_nav_link" href="/page/paymentlist">Payment Settings</a>
+									@*<a class="nav-link sub_nav_link" href="email_setting.html">Email Settings</a>*@
+									<a class="nav-link sub_nav_link" href="/page/companylist">Website Settings</a>
+								</nav>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        <div id="layoutSidenav_content">
+            @Body
+            </div>
+            </div>
+    </Authorized>
+    <NotAuthorized>
+       <LoginDisplay />
+    </NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationState { get; set; }
+    string Id;
+    private bool _drawerOpen = true;
+    private bool _rightToLeft = false;
+    private string searchValue = string.Empty;
+     bool UISwitcher;
+	string Display => UISwitcher == true ? "none;" : "block;";
+    private async Task LoadData()
+    {
+        var authState = await authenticationState;
+        var user = authState.User;
+        string userId = user.FindFirst(ClaimTypes.Name).Value;
+
+        if(userId != "1")
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        StateHasChanged();
+    }
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void RightToLeftToggle()
+    {
+        _rightToLeft = !_rightToLeft;
+    }
+
+    protected async override void OnInitialized()
+    {
+        await LoadData();
+
+    }
+}

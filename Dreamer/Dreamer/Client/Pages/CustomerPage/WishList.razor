@@ -1,0 +1,126 @@
+﻿@page "/customer/wishlist"
+@inject IStringLocalizer<Resource> localizer
+@inject ICartService CartService
+@inject IProduct _productService
+@inject ICategory _category
+@inject IToastService toastService
+@using System.Security.Claims
+@attribute [Authorize]
+
+
+
+<div class="dashboard-group">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="user-dt">
+							@*<div class="user-img">
+								<img src="images/avatar/img-5.jpg" alt="">
+								<div class="img-add">													
+									<input type="file" id="file">
+									<label for="file"><i class="uil uil-camera-plus"></i></label>
+								</div>
+							</div>*@
+                            <AuthorizeView>
+                            <Authorized>
+
+							<h4>@context.User.FindFirst(ClaimTypes.Email).Value</h4>
+                            </Authorized>
+                            </AuthorizeView>
+							@*<p>+91999999999<a href="#"><i class="uil uil-edit"></i></a></p>*@
+							@*<div class="earn-points"><img src="images/Dollar.svg" alt="">Points : <span>20</span></div>*@
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+<section class="">
+<div class="container">
+<div class="row">
+<div class="col-lg-3 col-md-4">
+<div class="left-side-tabs">
+    <CustomerMenu />
+</div>
+</div>
+<div class="col-lg-9 col-md-8">
+									<div class="pdpt-bg">
+										<div class="wishlist-body-dtt">
+                                            @if (cartItems == null || cartItems.Count <= 0)
+                            {
+                            <span>You have no items in your cart.</span>
+                        }
+                        else
+                        {
+                            @foreach (var item in cartItems)
+                            {
+                                <div class="cart-item">
+                                    <div class="cart-product-img">
+                                        <a href="/single-product/@item.ProductId">
+
+                                            @if (item.Image != null)
+                                            {
+                                                <img src="@item.Image" width="60" height="60" />
+                                            }
+                                            else
+                                            {
+                                                <img src="loading.jpg" width="60" height="60" />
+                                            }
+                                        </a>
+                                        @*<div class="offer-badge">4% OFF</div>*@
+                                    </div>
+                                    <div class="cart-text">
+                                        <h4>Product Title Here</h4>
+                                        <div class="cart-item-price">@item.Price <span></span></div>
+                                        <button type="button" class="cart-close-btn" @onclick="(() => DeleteItem(item))"><i class="uil uil-trash-alt"></i></button>
+                                    </div>		
+                                </div>
+                            }
+                        }
+										</div>
+									</div>
+								</div>
+</div>
+</div>
+</section>
+@code {
+    List<CartItem> cartItems = new List<CartItem>();
+    private Product product = new Product();
+    IList<Category> listCategory = new List<Category>();
+    private CartItem cartItem = new CartItem { Quantity = 1 };
+    bool orderPlaced = false;
+    string category = "Category";
+
+    protected override async Task OnInitializedAsync()
+    {
+        listCategory = await _category.GetAll();
+        cartItems = await CartService.GetCartWishItems();
+    }
+
+    private async Task DeleteItem(CartItem item)
+    {
+        await CartService.DeleteWishItem(item);
+        cartItems = await CartService.GetCartWishItems();
+    }
+
+    private async Task PlaceOrder()
+    {
+        orderPlaced = true;
+        await CartService.EmptyWishCart();
+    }
+    private async Task AddToCart(CartItem item)
+    {
+        //product = await _productService.GetbyId(Convert.ToInt32(id));
+
+        cartItem.CategoryId = item.CategoryId;
+        cartItem.EditionName = item.Name;
+        cartItem.Image = item.Image;
+        cartItem.Price = item.Price;
+        cartItem.ProductId = item.ProductId;
+        cartItem.Name = item.EditionName;
+
+        await CartService.AddToWishCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartWishItems();
+        StateHasChanged();
+    }
+}

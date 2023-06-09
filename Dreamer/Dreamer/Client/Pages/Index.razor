@@ -1,0 +1,222 @@
+﻿@page "/"
+@inject IStringLocalizer<Resource> localizer
+@inject IProduct _product
+@inject ICartService CartService
+@inject ILocalStorageService LocalStorage
+@inject IJSRuntime JSRuntime
+@inject NavigationManager navigationManager
+@inject IToastService toastService
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+
+<div class="main-banner-slider">
+			<div class="container">
+				<div class="row">
+						<Dreamer.Client.Pages.FrontEnd.SliderPage />
+				</div>
+			</div>
+		</div>
+        <div class="section145">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="product-top-dt">
+							<div class="product-left-title">
+								<h2>@localizer["New Products"]</h2>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="product-list-view">
+					<div class="row">
+                        @if(listNew == null)
+							{
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="200px" Height="110px" />
+							}
+							else
+							{
+                        @foreach(var item in listNew)
+                        {
+						<div class="col-lg-3 col-md-6">
+							<div class="product-item mb-30">
+								<a href="/single-product/@item.ProductId" class="product-img">
+									@if(@item.Image == null)
+                                                {
+                                                    
+                                                }
+                                                else
+                                                {
+                                                <img src="@item.Image" alt="@item.Name">
+                                                }
+									<div class="product-absolute-options">
+										<span class="offer-badge-1">@item.Discount off</span>
+									</div>
+								</a>
+								<div class="product-text-dt">
+									<p>Available<span>@item.Quantity (In Stock)</span></p>
+									<h4><a href="/single-product/@item.ProductId">@item.Name</a></h4>
+									<div class="product-price">@item.SalePrice <span>@item.OriginalPrice</span></div>
+									<div class="qty-cart">
+										<div class="quantity buttons_added">
+                                        </div>
+                                        <span class="like-icon" @onclick="() => AddToWishCart(item)" title="wishlist"></span>
+										<span class="cart-icon" @onclick="() => AddToCart(item)"><i class="uil uil-shopping-cart-alt"></i></span>
+									</div>
+								</div>
+							</div>
+						</div>
+                        }
+                        }
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="section145">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="product-top-dt">
+							<div class="product-left-title">
+								<h2>@localizer["Featured Products"]</h2>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="product-list-view">
+					<div class="row">
+                        @if(listSale == null)
+							{
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="200px" Height="110px" />
+							}
+							else
+							{
+                        @foreach(var item in listSale)
+                        {
+						<div class="col-lg-3 col-md-6">
+							<div class="product-item mb-30">
+								<a href="/single-product/@item.ProductId" class="product-img">
+									@if(@item.Image == null)
+                                                {
+                                                    
+                                                }
+                                                else
+                                                {
+                                                <img src="@item.Image" alt="@item.Name">
+                                                }
+									<div class="product-absolute-options">
+										<span class="offer-badge-1">@item.Discount off</span>
+									</div>
+								</a>
+								<div class="product-text-dt">
+									<p>Available<span>@item.Quantity (In Stock)</span></p>
+									<h4><a href="/single-product/@item.ProductId">@item.Name</a></h4>
+									<div class="product-price">@item.SalePrice <span>@item.OriginalPrice</span></div>
+									<div class="qty-cart">
+										<div class="quantity buttons_added">
+                                        </div>
+                                        <span class="like-icon" @onclick="() => AddToWishCart(item)" title="wishlist"></span>
+										<span class="cart-icon" @onclick="() => AddToCart(item)"><i class="uil uil-shopping-cart-alt"></i></span>
+									</div>
+								</div>
+							</div>
+						</div>
+                        }
+                        }
+					</div>
+				</div>
+			</div>
+		</div>
+@code{
+    private string selectedSlide = "2";
+    IList<ProductView> listProduct = new List<ProductView>();
+    IList<Product> listModel = new List<Product>();
+    IList<Product> listAll = new List<Product>();
+    string category = "Category";
+    List<CartItem> cartItems = new List<CartItem>();
+    List<CartItem> cartwishItems = new List<CartItem>();
+    private Product product = new Product();
+    private int currentCount = 1;
+    private int currentEditionId = 1;
+    public string name = string.Empty;
+
+    private CartItem cartItem = new CartItem { Quantity = 1 };
+    private CartItem cartwishItem = new CartItem { Quantity = 1 };
+    //NewProduct
+    IList<Product> listNew = new List<Product>();
+    //SaleProduct
+    IList<Product> listSale = new List<Product>();
+    bool boolNew = true;
+    bool boolSale = true;
+    protected async override void OnInitialized()
+    {
+        listAll = await _product.GetAllDetails();
+        listModel = listAll;
+        listNew = listModel.Where(img => img.IsNew.ToString().ToLower().Contains(boolNew.ToString().ToLower())).Take(8).ToList();
+        //listNew = await _product.GetAllNew();
+        listSale = listModel.Where(img => img.IsSale.ToString().ToLower().Contains(boolSale.ToString().ToLower())).Take(8).ToList();
+        //listSale = await _product.GetAllSales();
+		cartItems = await CartService.GetCartItems();
+        cartwishItems = await CartService.GetCartWishItems();
+		StateHasChanged();
+	}
+	private ProductView GetSelectedVariant()
+    {
+        var variant = product.Variants.FirstOrDefault(v => v.CategoryId == currentEditionId);
+        return variant;
+    }
+    private async Task AddToCart(Product item)
+    {
+
+
+        cartItem.CategoryId = item.CategoryId;
+        cartItem.EditionName = item.Name;
+        cartItem.Image = item.Image;
+        cartItem.Price = item.SalePrice;
+        cartItem.ProductId = item.ProductId;
+        cartItem.Name = item.Name;
+        cartItem.UserId = item.UserId;
+        await CartService.AddToCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartItems();
+        StateHasChanged();
+    }
+    private async Task AddToWishCart(Product item)
+    {
+
+
+        cartwishItem.CategoryId = item.CategoryId;
+        cartwishItem.EditionName = item.Name;
+        cartwishItem.Image = item.Image;
+        cartwishItem.Price = item.SalePrice;
+        cartwishItem.ProductId = item.ProductId;
+        cartwishItem.Name = item.Name;
+        cartwishItem.UserId = item.UserId;
+        await CartService.AddToWishCart(cartwishItem);
+        toastService.ShowSuccess("Successfully add to wishCart.");
+        cartwishItems = await CartService.GetCartWishItems();
+        StateHasChanged();
+    }
+    private void IncrementCount()
+    {
+       cartItem.Quantity = currentCount++;
+    }
+    private void DecrementCount()
+    {
+        cartItem.Quantity = currentCount--;
+    }
+    private async void Search()
+    {
+        if (name == string.Empty)
+        {
+
+        }
+        else
+        {
+            navigationManager.NavigateTo($"/product/shop-detailssearch/{name}");
+        }
+    }
+    }

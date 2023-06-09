@@ -1,0 +1,117 @@
+﻿@page "/wishlist"
+@inject IStringLocalizer<Resource> localizer
+@inject ICartService CartService
+@inject IProduct _productService
+@inject IToastService toastService
+<main class="no-main">
+        <div class="ps-breadcrumb">
+            <div class="container">
+                <ul class="ps-breadcrumb__list">
+                    <li class="active"><a href="/">Home</a></li>
+                    <li class="active"><a href="/">Shop</a></li>
+                    <li><a href="javascript:void(0);">Wishlist</a></li>
+                </ul>
+            </div>
+        </div>
+        <section class="section--wishlist">
+            <div class="container">
+                <h2 class="page__title">@localizer["Wishlist"]</h2>
+                <div class="wishlist__content">
+                    <div class="wishlist__product">
+                        <div class="wishlist__product--desktop">
+                            <table class="table">
+                                <thead class="wishlist__thead">
+                                    <tr>
+                                        <th scope="col"></th>
+                                        <th scope="col">Product Name</th>
+                                        <th scope="col">Qty</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="wishlist__tbody">
+                                    @foreach (var item in cartItems)
+                                        {
+                                    <tr>
+                                        <td>
+                                            <div class="wishlist__trash">
+                                                <a style="cursor:pointer;" @onclick="(() => DeleteItem(item))"><i class="icon-trash2"></i></a></div>
+                                        </td>
+                                        <td>
+                                            <div class="ps-product--vertical">
+                                                <a href="/single-product/@item.ProductId">
+                                                @if (item.Image != null)
+                                                    {
+                                                        <img src="@item.Image" width="60" height="60" class="ps-product__thumbnail" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <h2>Data not found</h2>
+                                                    }
+                                                <div class="ps-product__content">
+                                                    <h5><a class="ps-product__name" href="/single-product/@item.ProductId">@item.Name</a></h5>
+                                                    <p class="ps-product__unit">@item.Price</p>
+                                                </div>
+                                                </a>
+                                            </div>
+                                        </td>
+                                        <td><span class="ps-product__price">@item.Quantity</span>
+                                        </td>
+                                        <td><span class="ps-product__instock">@item.Price</span>
+                                        </td>
+                                        <td>
+                                            <button class="btn wishlist__btn add-cart" @onclick="() => AddToCart(item)"><i class="icon-cart"></i>Add to cart</button>
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="wishlist__share">
+                        <p>Share on: <a class="icon_social facebook" href="#"><i class="fa fa-facebook-f"></i></a><a class="icon_social twitter" href="#"><i class="fa fa-twitter"></i></a><a class="icon_social google" href="#"><i class="fa fa-google-plus"></i></a><a class="icon_social pinterest" href="#"><i class="fa fa-pinterest-p"></i></a><a class="icon_social wifi" href="#"><i class="fa fa-wifi"></i></a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+@code {
+        List<CartItem> cartItems = new List<CartItem>();
+    private Product product = new Product();
+    private CartItem cartItem = new CartItem { Quantity = 1 };
+    bool orderPlaced = false;
+    protected override async Task OnInitializedAsync()
+    {
+        cartItems = await CartService.GetCartWishItems();
+    }
+
+    private async Task DeleteItem(CartItem item)
+    {
+        await CartService.DeleteWishItem(item);
+        cartItems = await CartService.GetCartWishItems();
+    }
+
+    private async Task PlaceOrder()
+    {
+        orderPlaced = true;
+        await CartService.EmptyWishCart();
+    }
+    private async Task AddToCart(CartItem item)
+    {
+        //product = await _productService.GetbyId(Convert.ToInt32(id));
+
+        cartItem.CategoryId = item.CategoryId;
+        cartItem.EditionName = item.Name;
+        cartItem.Image = item.Image;
+        cartItem.Price = item.Price;
+        cartItem.ProductId = item.ProductId;
+        cartItem.Name = item.EditionName;
+
+        await CartService.AddToWishCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartWishItems();
+        StateHasChanged();
+    }
+}
+
+}

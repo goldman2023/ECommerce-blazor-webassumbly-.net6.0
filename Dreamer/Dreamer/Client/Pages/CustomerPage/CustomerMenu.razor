@@ -1,0 +1,35 @@
+﻿@inject IStringLocalizer<Resource> localizer
+@using System.Security.Claims
+@attribute [Authorize]
+@if(Id == "4")
+{
+<a href="/customer/dashboard" class="user-item"><i class="uil uil-apps"></i>@localizer["Dashboard"]</a>
+<a href="/customer/orderlist" class="user-item"><i class="uil uil-box"></i>@localizer["Order List"]</a>
+<a href="/customer/changepassword" class="user-item"><i class="uil uil-location-point"></i>@localizer["Change Password"]</a>
+<a href="/customer/changeprofile" class="user-item"><i class="uil uil-gift"></i>@localizer["Change Profile"]</a>
+<a href="LogOut" class="user-item"><i class="uil uil-exit"></i>@localizer["Logout"]</a>
+}
+else
+{
+<a href="/customer/dashboard" class="user-item"><i class="uil uil-apps"></i>@localizer["Dashboard"]</a>
+<a href="/customer/orderlist" class="user-item"><i class="uil uil-box"></i>@localizer["Order List"]</a>
+<a href="/customer/wishlist" class="user-item"><i class="uil uil-heart"></i>@localizer["WishList"]</a>
+<a href="/customer/billingprofile" class="user-item"><i class="uil uil-location-point"></i>@localizer["Billing Profile"]</a>
+<a href="/customer/shippingprofile" class="user-item"><i class="uil uil-location-point"></i>@localizer["Shipping Profile"]</a>
+<a href="/customer/changepassword" class="user-item"><i class="uil uil-location-point"></i>@localizer["Change Password"]</a>
+<a href="/customer/changeprofile" class="user-item"><i class="uil uil-gift"></i>@localizer["Change Profile"]</a>
+<a href="LogOut" class="user-item"><i class="uil uil-exit"></i>@localizer["Logout"]</a>
+}
+@code
+{
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationState { get; set; }
+    string Id;
+    protected async override void OnInitialized()
+    {
+        var authState = await authenticationState;
+        var user = authState.User;
+        Id = user.FindFirst(ClaimTypes.Name).Value;
+        StateHasChanged();
+    }
+}

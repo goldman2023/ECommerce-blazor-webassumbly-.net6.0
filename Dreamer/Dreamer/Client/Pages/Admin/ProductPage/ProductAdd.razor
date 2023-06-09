@@ -1,0 +1,416 @@
+﻿@page "/page/productadd"
+@layout AdminLayout
+@inject IProduct _product
+@inject ICategory _category
+@inject ICities _cities
+@inject IArea _area
+@inject IBrand _brand
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+
+<div class="container-fluid">
+								<EditForm Model="master" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+			<ValidationSummary />
+                        <h2 class="mt-30 page-title">Products</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Product</a></li>
+                            <li class="breadcrumb-item"><a>Products</a></li>
+                            <li class="breadcrumb-item active">Add New</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-lg-9 col-md-8">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Products Details</h4>
+									</div>
+									<div class="card-body-table">
+										<div class="post-form">
+											<div class="form-group">
+												<label class="form-label">Name*</label>
+												<input type="text" @bind="master.Name" class="form-control" placeholder="Product Name">
+											</div>
+											<div class="form-group">
+												<label class="form-label">Code*</label>
+												<input type="text" @bind="master.Code" class="form-control" placeholder="Code">
+											</div>
+											<div class="form-group">
+												<label class="form-label">Short Description</label>
+												<div class="card card-editor">
+													<div class="content-editor">
+														 <textarea class="text-control" @bind="master.ShortDetails"  placeholder="Short Description"></textarea>
+													</div>
+												</div>
+											</div>
+											<div class="form-group">
+												<label class="form-label">Description</label>
+												<div class="card card-editor">
+													<div class="content-editor">
+													<RadzenHtmlEditor @bind-Value="@master.Description" style="height: 500px; margin-bottom: 1rem;" UploadUrl="upload/image" />
+													 
+													 
+													 
+													 </div>
+												</div>
+											</div>
+											<div class="row">
+<div class="col-sm-12">
+<div class="table-responsive">
+                           <table id="myTable" class="table table-bordered table-hover">
+                               <thead>
+                        <tr>
+                            <th>Price</th>
+                            <th>Variation</th>
+                            <th>Stock</th>
+                            <th>
+                            <button type="button" class="btn btn-info" @onclick="@ModalAdd"><i class="fa fa-plus"></i></button>
+                                        </th>
+                        </tr>
+						<tr>
+							<th>
+								<input type="text" @bind="product.Price" class="form-control" />
+							</th>
+							<th>
+								<input type="text" @bind="product.Variation" class="form-control" />
+							</th>
+							<th>
+								<input type="text" @bind="product.Stock" class="form-control" />
+							</th>
+							<th>
+
+							</th>
+						</tr>
+                        </thead>
+                        <tbody>
+							@if (TodoList != null && TodoList.Count > 0)
+                            {
+                                @foreach (var td in TodoList)
+                                {
+                                    <tr role="row">
+                                        <td class=" align-middle">@td.Price</td>
+                                        <td class=" align-middle">@td.Variation</td>
+                                        <td class=" align-middle">@td.Stock</td>
+                                        <td>
+                                            <a data-toggle="tooltip" @onclick="@(e => deleteItem(td.ProductvariationId))" data-placement="left" title="Update"><i class="fa fa-pencil" aria-hidden="true"></i></a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+						</tbody>
+                    </table>
+                        </div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">Original Price <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.OriginalPrice" placeholder="Original Price" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+ <div class="form-group">
+<label class="control-label">Sales Price <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.SalePrice" placeholder="Sale Price" type="text">
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">Quantity <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.Quantity" placeholder="Quantity" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+ <div class="form-group">
+<label class="control-label">Discount <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.Discount" placeholder="Discount" type="text">
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">Product Type <span class="required">*</span></label>
+<select class="form-control" @bind="master.ProductType">
+    <option value="Grocery">Grocery</option>
+</select>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label">Youtube Link</label>
+<input class="form-control border-form-control" @bind="master.YoutubeLink" placeholder="YoutubeLink" type="text">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-2">
+<div class="form-group">
+	Is New <input type="checkbox" class="form-control" @bind=@master.IsNew/>
+</div>
+</div>
+<div class="col-sm-2">
+<div class="form-group">
+   Is Featured<input type="checkbox" class="form-control" @bind=@master.IsSale/>
+</div>
+</div>
+<div class="col-sm-2">
+<div class="form-group">
+    Is Slider <input type="hidden" class="form-control" @bind=@master.IsSlider/>
+</div>
+
+										</div>
+									</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-3 col-md-4">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Publish</h4>
+									</div>
+									<div class="card-body-table">
+										<div class="news-content-right pd-20">
+											<div class="custom-control custom-radio">
+												<label class="custom-control-label" for="customRadio1">Publish</label>
+											</div>
+											<div class="custom-control custom-radio">
+												<input type="checkbox" class="form-control" @bind=@master.IsActive/>
+											</div>
+											<button class="save-btn hover-btn" type="submit">Save Changes</button>
+										</div>
+									</div>
+								</div>
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Category</h4>
+									</div>
+									<div class="card-body-table">
+										<div class="news-content-right pd-20">
+											<div class="form-group">
+<select class="form-control" @bind="master.CategoryId">
+              <option value="0">Choose Category</option>
+                   @foreach(var item in listCategory)
+                    {
+                        @if(item.ParentId == 0)
+                        {
+                         <option value="@item.CategoryId">@item.Name</option>
+                         }
+                        @foreach (var items in listCategory)
+                        {
+
+                            @if (item.CategoryId == items.ParentId)
+                            {
+                                <option value="@items.CategoryId">@item.Name > @items.Name</option>
+                                @foreach (var itemss in listCategory)
+                                {
+                                    @if (items.CategoryId == itemss.ParentId)
+                                    {
+                                        <option value="@itemss.CategoryId">@item.Name > @items.Name > @itemss.Name</option>
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                </select>
+
+											</div>
+											<div class="form-group">
+												<label class="form-label">Brand*</label>
+												<select class="form-control" @bind="master.BrandId">
+													<option value="0">Choose Brand</option>
+													@foreach(var item in listBrand)
+									{
+										<option value="@item.BrandId">@item.BrandName</option>
+									}
+								</select>
+											</div>
+											<div class="form-group">
+												<label class="form-label">Area*</label>
+												<select class="form-control" @bind="master.AreaId">
+													<option value="0">Choose Area</option>
+													@foreach(var item in listArea)
+									{
+										<option value="@item.AreaId">@item.AreaName</option>
+									}
+								</select>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Featured Image</h4>
+									</div>
+									<div class="card-body-table">
+										<div class="news-content-right pd-20 text-center">	
+											<div class="fea-img">
+												@if(master.Image == null)
+                                {
+												<img src="images/featured-img.jpg" alt="">
+                                }
+								else
+								{
+                                    <img src="@master.Image" width="60" height="60">
+								}
+											<ValidationMessage For="@(() => master.Image)" />
+													<InputFile OnChange="OnFileChange" />
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+                        </div>
+						</EditForm>
+                    </div>
+@code {
+	Product master = new Product();
+	IList<Category> listCategory = new List<Category>();
+	IList<Cities> listCities = new List<Cities>();
+	IList<Area> listArea = new List<Area>();
+	IList<Brand> listBrand = new List<Brand>();
+	long editedID = 0;
+	ProductVariation product = new ProductVariation();
+	List<ProductVariation> TodoList = new List<ProductVariation>();
+			ProductVariation var = new ProductVariation();
+	protected async override void OnInitialized()
+	{
+		await LoadData();
+	}
+	private async Task LoadData()
+	{
+		listCategory = await _category.GetAll();
+		listArea = await _area.GetAll();
+		listBrand = await _brand.GetAll();
+		master.Code = string.Empty;
+		master.CategoryId = 0;
+		master.CitiesId = 0;
+		master.AreaId = 0;
+		master.BrandId = 0;
+		master.IsActive = true;
+		master.IsSlider = false;
+		master.IsNew = true;
+		master.IsSale = true;
+		master.YoutubeLink = string.Empty;
+		master.ProductType = "Grocery";
+		master.Title = string.Empty;
+		master.UnitName = string.Empty;
+		product.Variation = string.Empty;
+		StateHasChanged();
+	}
+	private async Task HandleSubmit()
+	{
+		if(master.CategoryId == 0)
+		{
+			toastService.ShowInfo("Choose Category.");
+		}
+		else if(master.BrandId == 0)
+		{
+			toastService.ShowInfo("Choose Brand.");
+		}
+		else if(master.AreaId == 0)
+		{
+			toastService.ShowInfo("Choose Area.");
+		}
+		else if(master.Image == string.Empty)
+		{
+			toastService.ShowInfo("Choose Image.");
+		}
+		else
+		{
+			master.Title = string.Empty;
+			master.UnitName = string.Empty;
+			//master.IsGiftcard = true;
+			master.CitiesId = 1;
+			master.UserId = 1;
+			master.CreatedOn = DateTime.Now;
+			foreach(var item in TodoList)
+			{
+				var.Price = item.Price;
+				var.Variation = item.Variation;
+				var.Stock = item.Stock;
+				master.Addresses.Add(var);
+			}
+			var result = await _product.Save(master);
+
+			//if (result.IsSuccessStatusCode)
+			//{
+				toastService.ShowSuccess("Successfully Saved.");
+				NavigationManager.NavigateTo("/page/productlist");
+			//}
+			//else
+			//{
+			//	toastService.ShowError("Already Exists.");
+			//}
+		}
+	}
+	private void Cancel()
+	{
+		NavigationManager.NavigateTo("/page/productlist");
+	}
+	async Task OnFileChange(InputFileChangeEventArgs e)
+	{
+		var format = "image/png";
+		var resizedImage = await e.File.RequestImageFileAsync(format, 300, 300);
+		var buffer = new byte[resizedImage.Size];
+		await resizedImage.OpenReadStream().ReadAsync(buffer);
+		var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+		if (imageData == null)
+		{
+			master.Image = string.Empty;
+		}
+		else
+		{
+			master.Image = imageData;
+		}
+	}
+	void ModalAdd()
+    {
+        if (product.Price == 0)
+        {
+            toastService.ShowInfo("Type Price.");
+        }
+        else if (product.Variation == null)
+        {
+            toastService.ShowInfo("Type Variation.");
+        }
+        if (editedID == 0)
+        {
+            var myTodoItem = new ProductVariation()
+            {
+                ProductvariationId = TodoList.Count() + 1,
+                Price = product.Price,
+                Variation = product.Variation,
+                Stock = product.Stock,
+
+            };
+            TodoList.Add(myTodoItem);
+            product.Price = 0;
+            product.Variation = string.Empty;
+            product.Stock = 0;
+        }
+        else
+        {
+            editedID = 0;
+			product.Price = 0;
+            product.Variation = string.Empty;
+            product.Stock = 0;
+        }
+    }
+    void deleteItem(long id)
+    {
+        var myTodo = TodoList.FirstOrDefault(x => x.ProductvariationId == id);
+        TodoList.Remove(myTodo);
+        editedID = 0;
+    }
+}

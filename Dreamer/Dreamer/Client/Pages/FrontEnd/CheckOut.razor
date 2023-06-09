@@ -1,0 +1,552 @@
+﻿@page "/checkout"
+@inject IStringLocalizer<Resource> localizer
+@inject IPayPalPlusClient payPalPlusClient
+@inject IStripePaymentService stripePaymentService
+@inject ICartService CartService
+@inject IOrderBilling billing
+@inject IState _state
+@inject IAccountsRepository _account
+@inject IShippingAddress _shipping
+@inject IBillingAddress _billingAddress
+@inject ICategory _category
+@inject IToastService toastService
+@inject NavigationManager navigationManager
+@inject ILocalStorageService localStorage
+@using System.Security.Claims
+@using Models
+@inject IJSRuntime jsRuntime
+@attribute [Authorize]
+<PageTitle>Checkout</PageTitle>
+<div class="gambo-Breadcrumb">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-12">
+						<nav aria-label="breadcrumb">
+							<ol class="breadcrumb">
+								<li class="breadcrumb-item"><a href="/">@localizer["Home"]</a></li>
+								<li class="breadcrumb-item active" aria-current="page">@localizer["Checkout"]</li>
+							</ol>
+						</nav>
+					</div>
+				</div>
+			</div>
+		</div>
+<div class="all-product-grid">
+        <div class="container">
+
+
+            <div class="row">
+				<div class="col-lg-8 col-md-7">
+				<EditForm Model="@order" OnValidSubmit="ProcessToPayment">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+<div id="checkout_wizard" class="checkout accordion left-chck145">
+    
+<div class="">
+<div class="">
+<div class="accordion" id="accordionExample">
+<div class="card checkout-step-one">
+<div class="card-header" id="headingOne">
+<h5 class="mb-0">
+<button style="font-size:14px; color:#000000;" class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+<span class="number">1</span> @localizer["Phone Number"]"
+</button>
+</h5>
+</div>
+<div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+<div class="card-body">
+<p>We need your phone number so that we can update you about your order.</p>
+ <form>
+<div class="form-row align-items-center">
+<div class="col-auto">
+<label class="sr-only"> @localizer["Phone number"]</label>
+<div class="input-group mb-2">
+<div class="input-group-prepend">
+<div class="input-group-text"><span class="mdi mdi-cellphone-iphone"></span></div>
+</div>
+<input type="text" @bind="order.Phone" class="form-control" placeholder="Enter phone number">
+</div>
+</div>
+<div class="col-auto">
+<button type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo" class="btn btn-secondary mb-2 btn-lg">NEXT</button>
+</div>
+</div>
+</form>
+</div>
+</div>
+</div>
+<div class="card checkout-step-two">
+<div class="card-header" id="headingTwo">
+<h5 class="mb-0">
+<button style="font-size:14px; color:#000000;" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+<span class="number">2</span> @localizer["Shipping Info"]
+</button>
+</h5>
+</div>
+<div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+<div class="card-body">
+    <div class="row">
+        <input type="checkbox" @bind="@CheckShipping" @onclick="() =>ChangeValue()" class="form-control" />
+<label class="custom-control-label" for="customCheckbill"> @localizer["Use my delivery address as my billing address"]</label>
+	</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["First Name"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.FirstName" placeholder="First Name" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Last Name"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.LastName" placeholder="Last Name" type="text">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Email"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.EmailId" placeholder="email" type="email">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label"> @localizer["Country"] <span class="required">*</span></label>
+<select class="form-control" @bind="order.CountryId" @onclick="() => ChangeCountry()">
+<option value="0">Select</option>
+@foreach(var item in listCountry)
+{
+    <option value="@item.CountryId">@item.Name</option>
+}
+</select>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["State"] <span class="required">*</span></label>
+<select class="form-control" @bind="order.StateId">
+<option value="0">Select</option>
+@foreach(var item in listState)
+{
+    <option value="@item.StateId">@item.StateName</option>
+}
+</select>
+</div>
+</div>
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["City"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.City" placeholder="City" type="text">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["PostalCode"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.PostalCode" placeholder="Postal Code" type="number">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label"> @localizer["Address"] <span class="required">*</span></label>
+<textarea class="form-control border-form-control" @bind="order.Address"></textarea>
+</div>
+</div>
+</div>
+<hr>
+@*ShippingAddress*@
+
+
+
+<div class="row">
+    <input type="checkbox" @bind="@CheckShippingAddress" @onclick="() =>ChangeValueShipping()" class="form-control" />
+<label class="custom-control-label" for="customCheckbill"> @localizer["Shipping address"]</label>
+	</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["First Name"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.ShippingFirstName" placeholder="First Name" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Last Name"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.ShippingLastName" placeholder="Last Name" type="text">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Phone"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.ShippingPhone" placeholder="Phone No" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Email"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.ShippingEmailId" placeholder="email" type="email">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label"> @localizer["City"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="order.ShippingCity" placeholder="City" type="text">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label"> @localizer["Shipping Address"] <span class="required">*</span></label>
+<textarea class="form-control border-form-control" @bind="order.ShippingAddress"></textarea>
+</div>
+</div>
+</div>
+<hr>
+
+@*<div class="custom-control custom-checkbox mb-3">
+<input type="checkbox" class="custom-control-input" id="customCheckbill">
+<label class="custom-control-label" for="customCheckbill">Use my delivery address as my billing address</label>
+</div>*@
+<button type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree" class="btn btn-secondary mb-2 btn-lg">NEXT</button>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-header" id="headingThree">
+<h5 class="mb-0">
+<button style="font-size:14px; color:#000000;" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+<span class="number">3</span> @localizer["Payment"]"
+</button>
+</h5>
+</div>
+<div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+<div class="card-body">
+<div class="form-group">
+    <div class="col-md-12">
+                                    <div class="row gutters-5">
+                                        <div class="col-12">
+                                            <ul class="wc_payment_methods payment_methods methods">
+			
+<li class="wc_payment_method payment_method_razorpay">
+	
+	<label for="payment_method_razorpay">Delivery Options</label>
+	<select class="form-control" @bind="order.PaymentType" @onclick="ChangeOption">
+		<option value="Cash on delivery">Cash on delivery</option>
+		<option value="Paypal">Paypal</option>
+		<option value="Stripe">Stripe</option>
+	</select>
+		
+	</li>
+		</ul>
+
+                                        </div>
+                                                                            </div>
+                                </div>
+@*<label class="control-label">Payment Type</label>
+<input class="form-control border-form-control" value="" placeholder="Payment Type" type="text">*@
+</div>
+<hr>
+<button style="font-size:14px; color:#000000;" type="button" data-toggle="collapse" data-target="#collapsefour" aria-expanded="false" aria-controls="collapsefour" class="btn btn-secondary mb-2 btn-lg">NEXT</button>
+</div>
+</div>
+</div>
+<div class="card">
+<div class="card-header" id="headingThree">
+<h5 class="mb-0">
+<button style="font-size:14px; color:#000000;" class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapsefour" aria-expanded="false" aria-controls="collapsefour">
+<span class="number">4</span> @localizer["Order Complete"]
+</button>
+</h5>
+</div>
+<div id="collapsefour" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+<div class="card-body">
+<div class="text-center">
+<div class="col-lg-10 col-md-10 mx-auto order-done">
+@*<i class="mdi mdi-check-circle-outline text-secondary"></i>
+<h4 class="text-success">Congrats! Your Order has been Accepted..</h4>*@
+@*<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque lobortis tincidunt est, et euismod purus suscipit quis. Etiam euismod ornare elementum. Sed ex est, Sed ex est, consectetur eget consectetur, Lorem ipsum dolor sit amet...
+</p>*@
+</div>
+<div class="text-center">
+    <button type="submit" class="btn btn-secondary mb-2 btn-lg">Proceed to Payment</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</EditForm>
+				</div>
+				<div class="col-lg-4 col-md-5">
+					<div class="pdpt-bg mt-0">
+						<div class="right-cart-dt-body">
+							<h4>@localizer["My Cart"]</h4>
+							    @if (cartItems == null || cartItems.Count <= 0)
+                                {
+							<span>You have no items in your cart.</span>
+						}
+						else
+						{
+							@foreach (var item in cartItems)
+							{
+								<div class="cart-item border_radius">
+									<div class="cart-product-img">
+										@if (item.Image != null)
+                                                    {
+                                                        <img src="@item.Image" width="60" height="60" class="img-fluid" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <img src="loading.jpg" width="60" height="60" class="img-fluid" />
+                                                    }
+										@*<img src="images/product/img-11.jpg" alt="">*@
+										@*<div class="offer-badge"></div>*@
+									</div>
+									<div class="cart-text">
+										<h4><a href="/single-product/@item.ProductId">@item.Name</a></h4>
+										<div class="cart-item-price">@item.Price <span></span></div>
+										@*<button type="button" class="cart-close-btn"><i class="uil uil-multiply"></i></button>*@
+									</div>		
+								</div>
+							}
+						}
+							</div>
+							<div class="total-checkout-group">
+								<div class="cart-total-dil">
+									<h4>Sub Total</h4>
+									<span>@cartItems.Sum(item => item.Price * item.Quantity)</span>
+								</div>
+								<div class="cart-total-dil pt-3">
+									<h4>Delivery Charges</h4>
+									<span>@DecDelivery</span>
+								</div>
+							</div>
+							<div class="main-total-cart">
+								<h2>Total</h2>
+								<span>@cartItems.Sum(item => item.Price * item.Quantity + @DecDelivery)</span>
+							</div>
+					</div>
+				</div>
+				</div>
+</div>
+</div>
+
+@code {
+	[CascadingParameter]
+	public Task<AuthenticationState> authenticationState { get; set; }
+	string Id = string.Empty;
+	bool CheckShipping = false;
+	bool CheckShippingAddress = false;
+	OrderMaster order = new OrderMaster();
+	IList<Country> listCountry = new List<Country>();
+	IList<State> listState = new List<State>();
+	List<CartItem> cartItems = new List<CartItem>();
+	IList<Category> listCategory = new List<Category>();
+	BillingAddress billingAddress = new BillingAddress();
+	ShippingAddress master = new ShippingAddress();
+	bool orderPlaced = false;
+	string category = "Category";
+	public bool Dense_Radio { get; set; } = false;
+	decimal DecDelivery = 50;
+	protected override async Task OnInitializedAsync()
+	{
+		var authState = await authenticationState;
+		var user = authState.User;
+		Id = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+		if (Id == null)
+		{
+			navigationManager.NavigateTo("/customer/login");
+			toastService.ShowSuccess("You have to login.");
+		}
+		listCategory = await _category.GetAll();
+		listCountry = await _state.GetAllCountry();
+		order.CountryId = 0;
+		order.StateId = 0;
+		cartItems = await CartService.GetCartItems();
+		order.PaymentType = "Cash on delivery";
+	}
+	private async void ChangeCountry()
+	{
+		if(order.CountryId > 0)
+		{
+			listState = await _state.GetAllState(order.CountryId);
+			StateHasChanged();
+		}
+		else
+		{
+			order.StateId = 0;
+		}
+		StateHasChanged();
+	}
+	private async void ChangeValue()
+	{
+		CheckShipping = true;
+		if (CheckShipping == true)
+		{
+			var authState = await authenticationState;
+			var user = authState.User;
+			Id = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+			billingAddress = await _billingAddress.GetAll(Convert.ToInt32(Id));
+			order.Address = billingAddress.AddressName;
+			order.FirstName = billingAddress.FirstName;
+			order.LastName = billingAddress.LastName;
+			order.EmailId = billingAddress.Email;
+			//order.Phone = billingAddress.PhoneNo;
+			StateHasChanged();
+		}
+		else
+		{
+			CheckShipping = false;
+			StateHasChanged();
+		}
+	}
+	private async void ChangeValueShipping()
+	{
+		CheckShippingAddress = true;
+		if (CheckShippingAddress == true)
+		{
+			var authState = await authenticationState;
+			var user = authState.User;
+			Id = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+			master = await _shipping.GetAll(Convert.ToInt32(Id));
+			order.ShippingAddress = master.AddressName;
+			order.ShippingFirstName = master.FirstName;
+			order.ShippingLastName = master.LastName;
+			order.ShippingEmailId = master.Email;
+			order.ShippingPhone = master.PhoneNo;
+			StateHasChanged();
+		}
+		else
+		{
+			CheckShippingAddress = false;
+			StateHasChanged();
+		}
+	}
+	private async Task DeleteItem(CartItem item)
+	{
+		await CartService.DeleteItem(item);
+		cartItems = await CartService.GetCartItems();
+	}
+
+	private async Task ProcessToPayment()
+	{
+		if(order.CountryId == 0)
+		{
+			toastService.ShowError("Choose Country.");
+		}
+		else if(order.StateId == 0)
+		{
+			toastService.ShowError("Choose State.");
+		}
+		else
+		{
+			var authState = await authenticationState;
+			var user = authState.User;
+			Id = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+			order.CustomerId = Convert.ToInt32(Id);
+			order.OrderDate = DateTime.UtcNow;
+			order.DeliveredDate = DateTime.UtcNow;
+			order.IsActive = "Order";
+			//order.PaymentType = "HomeDelivery";
+			order.SubTotal = cartItems.Sum(item => item.Price * item.Quantity);
+			order.Total = cartItems.Sum(item => item.Price * item.Quantity);
+			order.Discount = 0;
+			order.ExtraCharge = 0;
+			order.Tax = 0;
+			order.CancelReason = "Nothing";
+			order.AddedDate = DateTime.UtcNow;
+			order.ModifyDate = DateTime.UtcNow;
+			order.OrderNo = string.Empty;
+			order.UserId = Id;
+			foreach (var item in cartItems)
+			{
+				OrderDetails product = new OrderDetails();
+				if (item != null)
+				{
+					product.OrderMasterId = 0;
+					product.ProductId = item.ProductId;
+					product.Qty = item.Quantity;
+					product.Rate = item.Price;
+					product.Amount = item.Quantity * item.Price;
+					order.listOrder.Add(product);
+				}
+				//order.UserId = item.UserId.ToString();
+			}
+			var result = await billing.Save(order);
+
+
+			if (order.PaymentType == "Paypal")
+			{
+
+				//PaypalPayment
+				decimal totalGrossPrice = cartItems.Sum(item => item.Price * item.Quantity);
+				string bookingDescription = order.EmailId;
+				string articleDescription = order.FirstName;
+				string internalReference =  order.LastName;
+
+				await payPalPlusClient.CreatePaymentAsync(totalGrossPrice, bookingDescription, articleDescription, internalReference);
+			}
+			if (order.PaymentType == "Stripe")
+			{
+				var paymentDTO = new StripePaymentDTO()
+					{
+						Amount = cartItems.Sum(item => Convert.ToInt64(item.Price) * Convert.ToInt64(item.Quantity)),
+						ProductName = order.PaymentType,
+						ReturnUrl = "/"
+					};
+				var resultStripe = await stripePaymentService.CheckOut(paymentDTO);
+
+				await jsRuntime.InvokeVoidAsync("redirectToCheckout", resultStripe.Data.ToString());
+			}
+			if (result.IsSuccessStatusCode)
+			{
+				toastService.ShowError("Successfully Saved.");
+
+				//string checkOutUrl = await CartService.Checkout();
+				//navigationManager.NavigateTo(checkOutUrl);
+				orderPlaced = true;
+				await CartService.EmptyCart();
+				//orderPlaced = true;
+				//await CartService.EmptyCart();
+				navigationManager.NavigateTo("/");
+			}
+			else
+			{
+				navigationManager.NavigateTo("/");
+				toastService.ShowError("You have to login.");
+			}
+		}
+	}
+	private void ChangeOption()
+	{
+		if(order.PaymentType == "Paypal")
+		{
+			toastService.ShowError("THIS IS TEST VERSION. YOU CAN NOT ADD,EDIT,DELETE DATA");
+		}
+		else if(order.PaymentType == "Stripe")
+		{
+			toastService.ShowError("THIS IS TEST VERSION. YOU CAN NOT ADD,EDIT,DELETE DATA");
+		}
+		else
+		{
+			
+		}
+	}
+    }

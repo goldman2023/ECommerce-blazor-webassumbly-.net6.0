@@ -1,0 +1,30 @@
+﻿@inherits LayoutComponentBase
+@using Blazored.Toast.Configuration
+@inject Microsoft.JSInterop.IJSRuntime JsRuntime;
+
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall" />
+<MudSnackbarProvider />
+@*@functions{
+    protected async override Task OnAfterRenderAsync(bool FirstRender)
+    {
+        if(FirstRender)
+        {
+            await JsRuntime.InvokeAsync<object>("Cardimgheader");
+            FirstRender = false;
+        }
+    }
+}*@
+<BlazoredToasts Position="ToastPosition.BottomRight"
+                Timeout="6"
+                IconType="IconType.FontAwesome"
+                SuccessClass="success-toast-override"
+                SuccessIcon="fa fa-thumbs-up"
+                ErrorIcon="fa fa-bug" />
+
+
+                <HeaderLayout />
+
+    <div class="wrapper">
+            @Body
+    </div>
+    <FooterLayout />

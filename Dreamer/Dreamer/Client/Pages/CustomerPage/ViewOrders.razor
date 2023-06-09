@@ -1,0 +1,241 @@
+﻿@page "/customer/vieworder/{id}"
+@inject IStringLocalizer<Resource> localizer
+@inject IOrderBilling _orderBilling
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@using System.Security.Claims
+
+
+
+
+<div class="dashboard-group">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="user-dt">
+							@*<div class="user-img">
+								<img src="images/avatar/img-5.jpg" alt="">
+								<div class="img-add">													
+									<input type="file" id="file">
+									<label for="file"><i class="uil uil-camera-plus"></i></label>
+								</div>
+							</div>*@
+                            <AuthorizeView>
+                            <Authorized>
+
+							<h4>@context.User.FindFirst(ClaimTypes.Email).Value</h4>
+                            </Authorized>
+                            </AuthorizeView>
+							@*<p>+91999999999<a href="#"><i class="uil uil-edit"></i></a></p>*@
+							@*<div class="earn-points"><img src="images/Dollar.svg" alt="">Points : <span>20</span></div>*@
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+<section class="">
+<div class="container">
+<div class="row">
+<div class="col-lg-3 col-md-4">
+<div class="left-side-tabs">
+    <CustomerMenu />
+</div>
+</div>
+
+
+
+
+<div class="col-lg-9 col-md-8">
+						<div class="dashboard-right">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="main-title-tab">
+										<h4><i class="uil uil-heart"></i>View Orders</h4>
+									</div>
+								</div>								
+								<div class="col-lg-12 col-md-12">
+									<div class="pdpt-bg">
+										<div class="wishlist-body-dtt" style="margin-left:10px;">
+<div class="row">
+    <div class="fetchdata">
+
+                            <div class="col-lg-12">
+                                <h5 style="margin-top:10px;">@localizer["Order No"]: @order.OrderNo</h5>
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <td><span style="">@order.IsActive</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td><span>@order.AddedDate</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    @*<a href="#" class="btn">Reorder</a>*@ |
+                                                    <a class="btn" @onclick="@Print">Print Order</a>
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+</div>    
+<div class="">
+        <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>@localizer["ID"]</th>
+                                                <th>@localizer["Product Name"]</th>
+                                                <th>@localizer["Qty"]</th>
+                                                <th>@localizer["Price"]</th>
+                                                <th>@localizer["Sub Total"]</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in listOrder)
+                                            {
+                                                <tr>
+                                                    <td>@item.OrderDetailsId</td>
+                                                    <td>@item.Name</td>
+                                                    <td>@item.Qty</td>
+                                                    <td>@item.Rate</td>
+                                                    <td>@item.Amount</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="subtotal">
+                                                <th colspan="4"> @localizer["Sub Total"] </th>
+                                                <td class="amount" data-th="Subtotal"> <span class="price">@order.SubTotal</span> </td>
+                                            </tr>
+                                            <tr class="shipping">
+                                                <th colspan="4"> Shipping &amp; Handling </th>
+                                                <td class="amount" data-th="Shipping &amp; Handling">
+                                                    <span class="price">@order.ExtraCharge</span>
+                                                </td>
+                                            </tr>
+                                            <tr class="grand_total">
+                                                <th colspan="4">
+                                                    <strong>@localizer["Grand Total"]</strong>
+                                                </th>
+                                                <td class="amount" data-th="Grand Total">
+                                                    <strong><span class="price">@order.Total</span></strong>
+                                                </td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+    </div>
+
+
+
+    @* Default Billing Address *@
+                    <div class="row">
+                        <div class="fetchdata">
+
+                            <div class="col-lg-12">
+                                <h5 style="border-bottom:1px solid gray;">@localizer["Billing Address"]</h5>
+                                <table class="table">
+                                    <tr>
+                                        <td>@localizer["Name"]</td>
+                                        <td>
+                                            @order.FirstName + @order.LastName
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>@localizer["Email"]</td>
+                                        <td>
+                                            @order.EmailId
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>@localizer["Address"]</td>
+                                        <td>
+                                            @order.CountryId , @order.StateId , @order.Address
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>@localizer["Phone"]</td>
+                                        <td>
+                                            @order.Phone
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Edit Address</td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                        @* Default Shipping Address *@
+                    <div class="row">
+                        <div class="fetchdata">
+
+                            <div class="col-lg-12">
+                                <h5 style="border-bottom:1px solid gray;">@localizer["Shipping Address"]</h5>
+                                <table class="table">
+                                    <tr>
+                                        <td>@localizer["Name"]</td>
+                                        <td>
+                                            @order.ShippingFirstName + @order.ShippingLastName
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>@localizer["Email"]</td>
+                                        <td>
+                                            @order.ShippingEmailId
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>@localizer["Address"]</td>
+                                        <td>
+                                            @order.ShippingAddress
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>@localizer["Phone"]</td>
+                                        <td>
+                                            @order.ShippingPhone
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Edit Address</td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+</div>
+</div>
+</section>
+@code {
+    [Parameter]
+    public string id { get; set; }
+    CustomerMaster customer = new CustomerMaster();
+    OrderMaster order = new OrderMaster();
+    IList<OrderDetailsView> listOrder = new List<OrderDetailsView>();
+    protected async override void OnInitialized()
+    {
+        order = await _orderBilling.GetbyId(Convert.ToInt32(id));
+        listOrder = await _orderBilling.GetOrderCustomerDetails(Convert.ToInt32(id));
+        StateHasChanged();
+    }
+    public async Task Print()
+    {
+        await JsRuntime.InvokeVoidAsync("printDiv");
+    }
+}

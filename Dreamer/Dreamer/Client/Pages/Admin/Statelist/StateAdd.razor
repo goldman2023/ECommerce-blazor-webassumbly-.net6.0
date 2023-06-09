@@ -1,0 +1,81 @@
+﻿@page "/page/stateadd"
+@layout AdminLayout
+@inject ICountry _country
+@inject IState _area
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">State</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Setting</a></li>
+                            <li class="breadcrumb-item"><a>State</a></li>
+                            <li class="breadcrumb-item active">Add State</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-lg-5 col-md-6">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Add New State</h4>
+									</div>
+									<div class="card-body-table">
+										<EditForm Model="master" OnValidSubmit="Save">
+                                            <DataAnnotationsValidator />
+										<div class="news-content-right pd-20">
+                                            <div class="form-group">
+												<label class="form-label">Country*</label>
+                                                <select class="form-control" @bind="master.CountryId">
+                                                    <option value="0">Chhose</option>
+                                                    @foreach(var item in listCountry)
+                                    {
+                                        <option value="@item.CountryId">@item.Name</option>
+                                    }
+                                </select>
+											<ValidationMessage For="@(() => master.CountryId)" />
+                                            </div>
+											<div class="form-group">
+												<label class="form-label">Name*</label>
+												<input type="text" class="form-control" @bind="master.StateName" placeholder="Area Name">
+											<ValidationMessage For="@(() => master.StateName)" />
+                                            </div>
+											<button class="save-btn hover-btn" type="submit">Save</button>
+										</div>
+										</EditForm>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+@code {
+    IList<Country> listCountry = new List<Country>();
+    State master = new State();
+    protected async override void OnInitialized()
+    {
+        listCountry = await _country.GetAll();
+        master.CountryId = 0;
+        StateHasChanged();
+    }
+    private async Task Save()
+    {
+        if (master.CountryId == 0)
+        {
+            toastService.ShowInfo("Choose Country");
+        }
+        else
+        {
+            var result = await _area.Save(master);
+
+            if (result.IsSuccessStatusCode)
+            {
+                toastService.ShowSuccess("Successfully Saved");
+                NavigationManager.NavigateTo("/page/statelist");
+            }
+            else
+            {
+                toastService.ShowInfo("Already Exists.");
+            }
+        }
+    }
+}

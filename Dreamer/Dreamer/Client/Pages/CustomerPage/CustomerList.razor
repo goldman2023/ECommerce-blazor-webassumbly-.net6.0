@@ -1,0 +1,89 @@
+﻿@page "/page/customerlist"
+@inject ICustomer _customer
+@layout AdminLayout
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+@*@attribute [Authorize(Roles = "Admin")]*@
+
+<div class="container-fluid">
+            <div class="row justify-content-between">
+
+
+
+               <div class="col-lg-12 col-md-12">
+                   <div class="card card-static-2 mt-30 mb-30">
+
+                           <div class="card-body-table">
+                               <div class="table-responsive">
+                                   @if(listCustomer == null)
+                        {
+                            
+                        }
+                        else
+                        {
+                            <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@listCustomer" TItem="CustomerMaster" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="CustomerMaster" Property="FirstName" Title="FirstName" Frozen="true" Width="140px" />
+            <RadzenDataGridColumn TItem="CustomerMaster" Property="LastName" Title="LastName" Frozen="true" Width="140px" />
+            <RadzenDataGridColumn TItem="CustomerMaster" Property="Email" Title="Email" Frozen="true" Width="140px" />
+            <RadzenDataGridColumn TItem="CustomerMaster" Property="MobileNo" Title="MobileNo" Frozen="true" Width="140px" />
+            <RadzenDataGridColumn TItem="CustomerMaster" Property="IsActive" Title="IsActive" Frozen="true" Width="140px" />
+            <RadzenDataGridColumn TItem="CustomerMaster" Title="Action" Frozen="true" Sortable="false" Filterable="false" Width="60px" >
+                <Template Context="data">
+                    <center>
+															<a @onclick="@(()=>Edit(data.CustomerId))" class="edit-btn" title="Edit"><i class="fas fa-edit"></i></a> |
+                                                            <a @onclick="() => Delete(data)" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+														</center>
+                </Template>
+            </RadzenDataGridColumn>
+            
+        </Columns>
+    </RadzenDataGrid>
+}
+</div>
+                           </div>
+</div>
+</div>
+            </div>
+</div>
+
+
+@code {
+    IList<CustomerMaster> listCustomer = new List<CustomerMaster>();
+    protected async override void OnInitialized()
+    {
+        await LoadData();
+    }
+    private async Task LoadData()
+    {
+        listCustomer = await _customer.GetAll(3);
+        StateHasChanged();
+    }
+    async void Edit(int id)
+    {
+        toastService.ShowInfo("THIS IS TEST VERSION. YOU CAN NOT ADD,EDIT,DELETE DATA.");
+        //NavigationManager.NavigateTo($"/page/customeredit/{id}");
+    }
+    async void Delete(CustomerMaster customermaster)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        if (confirmed)
+        {
+            toastService.ShowInfo("THIS IS TEST VERSION. YOU CAN NOT ADD,EDIT,DELETE DATA.");
+            //Snackbar.Add("THIS IS TEST VERSION. YOU CAN NOT ADD,EDIT,DELETE DATA.", Severity.Success);
+            //var result = await _customer.Delete(customermaster);
+            //if (result.IsSuccessStatusCode)
+            //{
+            //    Snackbar.Add("Successfully Deleted.", Severity.Success);
+            //    await LoadData();
+            //}
+            //else
+            //{
+            //    Snackbar.Add("Cannot be delete. already in used.", Severity.Info);
+            //}
+        }
+    }
+}

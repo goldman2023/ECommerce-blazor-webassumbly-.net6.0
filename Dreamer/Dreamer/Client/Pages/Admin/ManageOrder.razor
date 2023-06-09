@@ -1,0 +1,167 @@
+﻿@page "/manageorder/{id}"
+@layout AdminLayout
+@inject IOrderBilling _orderBilling
+@inject NavigationManager navigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@using System.Net.Mail
+@attribute [Authorize]
+
+
+
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Orders</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a href="/page/dashboard">Dashboard</a></li>
+                            <li class="breadcrumb-item"><a href="/page/orders">Orders</a></li>
+                            <li class="breadcrumb-item active">Order Details</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-xl-12 col-md-12">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h2 class="title1458">Invoice</h2>
+										<span class="order-id">Order #@order.OrderNo</span> 
+									</div>
+									<div class="invoice-content">
+										<div class="row">
+											<div class="col-lg-4 col-sm-4">
+												<div class="ordr-date">
+													<b>Order Date :</b> @order.OrderDate
+												</div>
+											</div>
+											<div class="col-lg-4 col-sm-4">
+												<div class="ordr-date right-text">
+													<b>Billing Info :</b><br>
+												Name:	@order.FirstName &nbsp;&nbsp; @order.LastName<br>
+													@order.EmailId,<br>
+												Address: @order.CountryId &nbsp;&nbsp; @order.StateId &nbsp;&nbsp; @order.Address<br>
+												Phone: @order.Phone<br>
+												</div>
+											</div>
+                                            <div class="col-lg-4 col-sm-4">
+												<div class="ordr-date right-text">
+													<b>Shipping Info :</b><br>
+												Name:	@order.ShippingFirstName &nbsp;&nbsp; @order.ShippingLastName<br>
+													@order.EmailId,<br>
+												Address: @order.CountryId &nbsp;&nbsp; @order.StateId &nbsp;&nbsp; @order.Address<br>
+												Phone: @order.ShippingPhone<br>
+												</div>
+											</div>
+											<div class="col-lg-12">
+												<div class="card card-static-2 mb-30 mt-30">
+													<div class="card-title-2">
+														<h4>Recent Orders</h4>
+													</div>
+													<div class="card-body-table">
+														<div class="table-responsive">
+															<table class="table ucp-table table-hover">
+																<thead>
+																	<tr>
+																		<th style="width:100px">#S.No</th>
+																		<th>Item</th>
+																		<th style="width:150px">Qty</th>
+																		<th style="width:150px">Price</th>
+																		<th style="width:100px">Total</th>
+																	</tr>
+																</thead>
+																<tbody>
+                                                                    @{
+                            int sno = 0;
+                 }
+																	@foreach (var item in listOrder)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @{sno++;}
+                            @sno
+                            </td>
+                                                    <td>@item.Name</td>
+                                                    <td>@item.Qty</td>
+                                                    <td>@item.Rate</td>
+                                                    <td>@item.Amount</td>
+                                                </tr>
+                                            }
+																</tbody>
+															</table>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-7"></div>
+											<div class="col-lg-5">
+												<div class="order-total-dt">
+													<div class="order-total-left-text">
+														Sub Total
+													</div>
+													<div class="order-total-right-text">
+														@order.SubTotal
+													</div>
+												</div>
+												<div class="order-total-dt">
+													<div class="order-total-left-text">
+														Delivery Fees
+													</div>
+													<div class="order-total-right-text">
+														@order.ExtraCharge
+													</div>
+												</div>
+												<div class="order-total-dt">
+													<div class="order-total-left-text fsz-18">
+														Total Amount
+													</div>
+													<div class="order-total-right-text fsz-18">
+														@order.Total
+													</div>
+												</div>
+											</div>
+											<div class="col-lg-7"></div>
+											<div class="col-lg-5">
+												<div class="select-status">
+													<label for="status">Status*</label>
+													<div class="input-group">
+														<select class="form-control" @bind="order.IsActive">
+                                                <option value="Order">Order</option>
+                                                <option value="OnGoing">OnGoing</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                                <option value="Delivered">Delivered</option>
+                                                <option value="Rejected">Rejected</option>
+                                            </select>
+														<div class="input-group-append">
+															<button class="status-btn hover-btn" type="button" @onclick="UpdateStatus">Submit</button>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+@code {
+    [Parameter]
+    public string id { get; set; }
+    private string Message { get; set; } = "";
+
+    CustomerMaster customer = new CustomerMaster();
+    OrderMaster order = new OrderMaster();
+    IList<OrderDetailsView> listOrder = new List<OrderDetailsView>();
+    protected async override void OnInitialized()
+    {
+        order = await _orderBilling.GetbyId(Convert.ToInt32(id));
+        listOrder = await _orderBilling.GetOrderCustomerDetails(Convert.ToInt32(id));
+        StateHasChanged();
+    }
+    protected async void UpdateStatus()
+    {
+        order.DeliveredDate = DateTime.UtcNow;
+        var result = await _orderBilling.Update(order);
+        if(result.IsSuccessStatusCode)
+        {
+            
+        }
+		toastService.ShowSuccess("Successfully Update");
+        navigationManager.NavigateTo("/page/orders");
+    }
+}

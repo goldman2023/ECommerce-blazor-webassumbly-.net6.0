@@ -1,0 +1,252 @@
+﻿@page "/customer/dashboard"
+@inject IStringLocalizer<Resource> localizer
+@inject IOrderBilling _orderBilling
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@using System.Security.Claims
+@attribute [Authorize]
+
+
+
+<div class="dashboard-group">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="user-dt">
+							@*<div class="user-img">
+								<img src="images/avatar/img-5.jpg" alt="">
+								<div class="img-add">													
+									<input type="file" id="file">
+									<label for="file"><i class="uil uil-camera-plus"></i></label>
+								</div>
+							</div>*@
+                            <AuthorizeView>
+                            <Authorized>
+
+							<h4>@context.User.FindFirst(ClaimTypes.Email).Value</h4>
+                            </Authorized>
+                            </AuthorizeView>
+							@*<p>+91999999999<a href="#"><i class="uil uil-edit"></i></a></p>*@
+							@*<div class="earn-points"><img src="images/Dollar.svg" alt="">Points : <span>20</span></div>*@
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+<div class="">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-3 col-md-4">
+						<div class="left-side-tabs">
+							<div class="dashboard-left-links">
+								<CustomerMenu/>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-9 col-md-8">
+						<div class="dashboard-right">
+							<div class="row">
+								<div class="col-lg-12 col-md-12">
+																		<div class="pdpt-bg">
+										<div class="wishlist-body-dtt">
+@if(listOrder == null)
+                                    {
+                                        
+                                    }
+                                    else
+                                    {
+                                    <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>S.No</th>
+                                                        <th>Order No</th>
+                                                        <th>Date</th>
+                                                        <th>Ship To</th>
+                                                        <th>Total</th>
+                                                        <th>Status</th>
+                                                        <th></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @{
+                            int sno = 0;
+                 }
+                @foreach (var item in listOrder)
+                {
+                    <tr>
+                        <td>@{sno++;}
+                            @sno
+                            </td>
+                            <td>@item.OrderNo</td>
+                            <td>@item.OrderDate</td>
+                            <td>@item.FirstName &nbsp;&nbsp;@item.LastName</td>
+                            <td>@item.Total</td>
+                            <td>
+                                @if(@item.IsActive == "Order")
+                                                    {
+                                                        <span class="badge badge-info light"> @item.IsActive </span>
+                                                    }
+                                                    else if(@item.IsActive == "OnGoing")
+                                                    {
+                                                        <span class="badge badge-warning  light"> @item.IsActive </span>
+                                                    }
+                                                   else if(@item.IsActive == "Cancelled")
+                                                    {
+                                                        <span class="badge badge-danger light"> @item.IsActive </span>
+                                                    }
+                                                    else if(@item.IsActive == "Delivered")
+                                                    {
+                                                        <span class="badge badge-success-teal light"> @item.IsActive </span>
+                                                    }
+                                                    else if(@item.IsActive == "Rejected")
+                                                    {
+                                                        <span class="badge badge-danger light"> @item.IsActive </span>
+                                            }
+                                                    else
+                                                    {
+                                                        
+                                                    }
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex">
+                @if(Ids == "3")
+                {
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-light btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                                    Action
+                                                                    </button>
+                                                                    <div class="dropdown-menu dropdown-menu-right" style="">
+                                                                        <a class="dropdown-item" href="/customer/vieworder/@item.OrderMasterId"> View</a>
+                                                                        @if (@item.IsActive == "Delivered")
+                                                    {
+
+                                                    }
+                                                    else if (@item.IsActive == "Rejected")
+                                                    {
+
+                                                    }
+                                                    else
+                                                    {
+                                                    <a class="dropdown-item" @onclick="() => CancelOrdersss(item.OrderMasterId)">Cancel Order</a> 
+                                                    @*<a href="#">Reorder</a>*@
+                                                        }
+                                                        </div>
+                                                        </div>
+                                                        }
+                                                        @if(Ids=="4")
+                                                            {
+                                                                <div class="dropdown">
+                                                                <button class="btn btn-light btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                                    Action
+                                                                    </button>
+                                                                    <div class="dropdown-menu dropdown-menu-right" style="">
+                                                                        <a class="dropdown-item" href="/customer/vieworder/@item.OrderMasterId"> Order Details</a>
+                                                                        
+                                                     <a class="dropdown-item" @onclick="() => MarkAsDeliver(item.OrderMasterId)">Marks As Delivered</a> 
+                                                        </div>
+                                                        </div>
+                                                            }
+                                                        </div>
+                                                    </td>
+                            </tr>
+                }
+                                                </tbody>
+                                            </table>
+                                            }
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>	
+			</div>	
+		</div>
+
+@code {
+    [CascadingParameter]
+    public Task<AuthenticationState> authenticationState { get; set; }
+    string Id;
+    string Ids;
+    OrderMaster order = new OrderMaster();
+    private bool dense = true;
+    private bool hover = true;
+    private bool striped = true;
+    private bool bordered = true;
+    private string searchString1 = "";
+    private string searchString2 = "";
+    IList<OrderMaster> listOrder = new List<OrderMaster>();
+    protected async override void OnInitialized()
+    {
+        LoadData();
+    }
+    private async void LoadData()
+    {
+        var authState = await authenticationState;
+        var user = authState.User;
+        Id = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+        Ids = user.FindFirst(ClaimTypes.Name).Value;
+        if (Id != null)
+        {
+            if (Ids == "4")
+            {
+                listOrder = await _orderBilling.GetOrderDeliveryboy(Id);
+            }
+            else
+            {
+                listOrder = await _orderBilling.GetOrderCustomer(Convert.ToInt32(Id));
+            }
+        }
+        StateHasChanged();
+    }
+    private async void CancelOrdersss(long orderMasterId)
+    {
+        order = await _orderBilling.GetbyId(Convert.ToInt32(orderMasterId));
+        if (order.IsActive == "Delivered")
+        {
+            toastService.ShowInfo("Already delivered");
+        }
+        else if (order.IsActive == "Rejected")
+        {
+            toastService.ShowInfo("Already Rejected.");
+        }
+        else
+        {
+            order.IsActive = "Cancelled";
+            order.AddedDate = DateTime.UtcNow;
+            var result = await _orderBilling.Update(order);
+            toastService.ShowInfo("Successfully Update.");
+            LoadData();
+        }
+        StateHasChanged();
+    }
+    private async void MarkAsDeliver(long orderMasterId)
+    {
+        order = await _orderBilling.GetbyId(Convert.ToInt32(orderMasterId));
+        if (order.IsActive == "Delivered")
+        {
+            toastService.ShowInfo("Already delivered");
+        }
+        else
+        {
+            order.DeliveredDate = DateTime.UtcNow;
+            order.IsActive = "Delivered";
+            order.AddedDate = DateTime.UtcNow;
+            var result = await _orderBilling.Update(order);
+            toastService.ShowInfo("Successfully Delivered");
+            listOrder = await _orderBilling.GetOrderDeliveryboy(Id);
+            LoadData();
+        }
+        StateHasChanged();
+    }
+    private bool Search(OrderMaster element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString1))
+            return true;
+        if (element.OrderNo.Contains(searchString1, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.FirstName.Contains(searchString1, StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
+    }
+}

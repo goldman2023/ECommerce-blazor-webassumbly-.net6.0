@@ -1,0 +1,499 @@
+﻿@inject IStringLocalizer<Resource> localizer
+@inject ICategory _category
+@inject IArea _area
+@inject ISyncLocalStorageService LocalStorage
+@inject ICartService CartService
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+@implements IDisposable
+@inject IToastService toastService
+@using System.Security.Claims
+<style>
+.topnav {
+  overflow: hidden;
+}
+
+.topnav a {
+  float: left;
+  display: block;
+  color: #000000;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  color: #000000;
+}
+
+.topnav .icon {
+  display: none;
+}
+</style>
+<style>
+.dropbtn {
+  background-color: #f9f9f9;
+  color: #000000;
+  padding: 14px;
+  font-size: 14px;
+  border: none;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  right: 0;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {background-color: #ddd;}
+
+.dropdown:hover .dropdown-content {display: block;}
+
+.dropdown:hover .dropbtn {background-color: #3e8e41;}
+</style>
+<div id="category_model" class="header-cate-model main-gambo-model modal fade" tabindex="-1" role="dialog" aria-modal="false">
+        <div class="modal-dialog category-area" role="document">
+            <div class="category-area-inner">
+                <div class="modal-header">
+                    <button type="button" class="close btn-close" data-dismiss="modal" aria-label="Close">
+						<i class="uil uil-multiply"></i>
+                    </button>
+                </div>
+                <div class="category-model-content modal-content"> 
+					<div class="cate-header">
+						<h4>@localizer["Select Category"]</h4>
+					</div>
+                    <ul class="category-by-cat">
+						@if(listCategory == null)
+							{
+
+							}
+							else
+							{
+						@foreach(var item in listCategory)
+						{
+						<li>
+							<a href="/shop-details/@item.CategoryId/@item.Name" class="single-cat-item">
+								<div class="icon">
+									@if(@item.Image == null)
+                                                {
+                                                    
+                                                }
+                                                else
+                                                {
+                                                <img src="@item.Image" width="40" height="40">
+                                                }
+								</div>
+								<div class="text"> @item.Name </div>
+							</a>
+						</li>
+						}
+						}
+                    </ul>
+					@*<a href="#" class="morecate-btn"><i class="uil uil-apps"></i>More Categories</a>*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+	<div class="bs-canvas bs-canvas-left position-fixed bg-cart h-100" style="width:500px;">
+		<div class="bs-canvas-header side-cart-header p-3 ">
+			<div class="d-inline-block  main-cart-title">@localizer["Cart"] <span>(@GetProductCount() Items)</span></div>
+			<button type="button" class="bs-canvas-close close" aria-label="Close"><i class="uil uil-multiply"></i></button>
+		</div> 
+		<div class="bs-canvas-body">
+			@if(cartItems.Count == 0)
+			{
+				<div class="text-center" style="text-align:center!important;">
+				<img src="img/empty-cart.png" width="140" height="140">
+				<p style="text-align:center!important;" class="text-center pt-2 pb-5"><b>Your Shopping Bag Is Empty !</b></p>
+			</div>
+			}
+			@foreach (var item in cartItems)
+			{
+				<div class="side-cart-items">
+					<div class="cart-item">
+					<div class="cart-product-img">
+						@if (@item.Image == null)
+							{
+								@*<img src="img/empty-cart.png" width="80" height="80">*@
+							}
+							else
+							{
+								<img src="@item.Image" width="40" height="80">
+							}
+						<div class="offer-badge"></div>
+					</div>
+					<div class="cart-text">
+						<h4>@item.Name</h4>
+						<div class="cart-radio">
+							
+						</div>
+						<div class="qty-group">
+							<div class="quantity buttons_added">
+								<EditForm Model="item">
+									<select @bind="item.Quantity" @onclick="() => AddToCart(item)">
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+										<option value="5">5</option>
+										<option value="6">6</option>
+										<option value="7">7</option>
+										<option value="8">8</option>
+										<option value="9">9</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+										<option value="13">13</option>
+										<option value="14">14</option>
+										<option value="15">15</option>
+										<option value="16">16</option>
+										<option value="17">17</option>
+										<option value="18">18</option>
+										<option value="19">19</option>
+										<option value="20">20</option>
+									</select>
+                                                           
+																	 </EditForm>
+							</div>
+							<div class="cart-item-price">@item.Price <span></span></div>
+							<div class="cart-item-price">@(item.Price * item.Quantity) <span></span></div>
+						</div>
+						
+						<button type="button" class="cart-close-btn" @onclick="(() => DeleteItem(item))"><i class="uil uil-multiply"></i></button>
+					</div>
+				</div>
+				</div>
+			}
+		</div>
+		<div class="bs-canvas-footer">
+			<div class="cart-total-dil saving-total ">
+				<h4>Sub Total:</h4>
+				<span>@cartItems.Sum(item => item.Price * item.Quantity)</span>
+			</div>
+			<div class="cart-total-dil saving-total ">
+				<h4>Delivery Charge:</h4>
+				<span>@DecDelivery</span>
+			</div>
+			<div class="main-total-cart">
+				<h2>Grand Total:</h2>
+				<span>@cartItems.Sum(item => item.Price * item.Quantity + @DecDelivery)</span>
+			</div>
+			<div class="checkout-cart" style="background:green;">
+				@*<a href="#" class="promo-code">Have a promocode?</a>*@
+				<a @onclick="Checkout"  class="bs-canvas-close close" style="color:#000000;" aria-label="Close">Proceed to Checkout</a>
+			</div>
+		</div>
+	</div>
+	<header class="header clearfix">
+		<div class="top-header-group">
+			<div class="top-header">
+				@*<div class="res_main_logo">
+					<a href="/">
+						<img src="img/grocerylogo-02.jpg" alt=""></a>
+				</div>*@
+				<div class="main_logo" id="logo">
+					<a href="/"><img src="img/logo.png" alt=""></a>
+					@*<a href="/"><img src="img/grocerylogo-02.jpg" alt=""></a>*@
+				</div>
+				<div class="select_location">
+					<div class="ui inline dropdown loc-title" tabindex="0">
+						<div class="text">
+							@if(listArea == null)
+							{
+
+							}
+							else
+							{
+						 <select class="ui inline dropdown loc-title" style="border:0px;" @bind="AreaId">
+							 @foreach(var item in listArea)
+							 {
+								 <option value="@item.AreaId">@item.AreaName</option>
+							 }
+						 </select>
+							}
+						</div>
+					</div>
+				</div>
+				<div class="search120">
+					<div class="ui search">
+					  <div class="ui left icon input swdh10">
+						<input class="prompt srch10" type="text" @bind="AreaName" placeholder="Search for products..">
+						<i class="uil uil-search-alt icon icon1"></i>
+						@if(AreaName == string.Empty)
+                            {
+                                <a href="/productsearch/@AreaId/@areaempty" class="Offer-shop-btn hover-btn">@localizer["Search"]</a>
+
+                            }
+                            else
+                            {
+                                <a href="/productsearch/@AreaId/@AreaName" class="Offer-shop-btn hover-btn">@localizer["Search"]</a>
+    }
+					  </div>
+					</div>
+				</div>
+				<div class="header_right">
+					<ul>
+						<li>
+							<CultureDropDown />
+						</li>
+						@*<li>
+							<a href="offers.html" class="offer-link"><i class="uil uil-gift"></i>Offers</a>
+						</li>
+						<li>
+							<a href="faq.html" class="offer-link"><i class="uil uil-question-circle"></i>Help</a>
+						</li>*@
+						<li>
+							<a href="/customer/wishlist" class="option_links" title="Wishlist">
+								<i class="uil uil-heart icon_wishlist"></i><span class="noti_count1">@GetProductWishCount()</span></a>
+						</li>
+						<li>
+							<div>
+								<AuthorizeView>
+                            <Authorized>
+								<a href="/customer/dashboard">
+								<img src="images/avatar/img-5.jpg" alt="">
+								<span class="user__name">
+								@if(Ids == "3")
+											{
+												<div class="dropdown">
+                                                                <button class="btn btn-light btn-xs dropdown-toggle" style="background:#ffffff;border:0px solid white;" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                                    @context.User.FindFirst(ClaimTypes.Email).Value
+                                                                    </button>
+                                                                    <div class="dropdown-menu dropdown-menu-right" style="">
+																		<a href="/customer/dashboard" class="dropdown-item"><i class="uil uil-apps"></i>@localizer["Dashboard"]</a>
+<a href="/customer/orderlist" class="dropdown-item"><i class="uil uil-box"></i>@localizer["Order List"]</a>
+<a href="/customer/wishlist" class="dropdown-item"><i class="uil uil-heart"></i>@localizer["WishList"]</a>
+<a href="/customer/billingprofile" class="dropdown-item"><i class="uil uil-location-point"></i>@localizer["Billing Profile"]</a>
+<a href="/customer/shippingprofile" class="dropdown-item"><i class="uil uil-wallet"></i>@localizer["Shipping Profile"]</a>
+<a href="/customer/changepassword" class="dropdown-item"><i class="uil uil-location-point"></i>@localizer["Change Password"]</a>
+<a href="/customer/changeprofile" class="dropdown-item"><i class="uil uil-gift"></i>@localizer["Change Profile"]</a>
+<a href="LogOut" class="dropdown-item"><i class="uil uil-exit"></i>@localizer["Logout"]</a>
+                                                                        
+                                                        </div>
+                                                        </div>
+											}
+											else if (Ids == "4")
+											{
+
+												<div class="dropdown">
+													<button class="btn btn-light btn-xs dropdown-toggle" style="background:#ffffff;border:0px solid white;" type="button" data-toggle="dropdown" aria-expanded="false">
+														@context.User.FindFirst(ClaimTypes.Email).Value
+													</button>
+													<div class="dropdown-menu dropdown-menu-right" style="">
+														<a href="/customer/dashboard" class="dropdown-item"><i class="uil uil-apps"></i>@localizer["Dashboard"]</a>
+														<a href="/customer/orderlist" class="dropdown-item"><i class="uil uil-box"></i>@localizer["Order List"]</a>
+														<a href="/customer/changepassword" class="dropdown-item"><i class="uil uil-location-point"></i>@localizer["Change Password"]</a>
+														<a href="/customer/changeprofile" class="dropdown-item"><i class="uil uil-gift"></i>@localizer["Change Profile"]</a>
+														<a href="LogOut" class="dropdown-item"><i class="uil uil-exit"></i>@localizer["Logout"]</a>
+
+													</div>
+												</div>
+											}
+											else
+											{
+												<div class="dropdown">
+                                                                <button class="btn btn-light btn-xs dropdown-toggle" style="background:#ffffff;border:0px solid white;" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                                    @context.User.FindFirst(ClaimTypes.Email).Value
+                                                                    </button>
+                                                                    <div class="dropdown-menu dropdown-menu-right" style="">
+																		<a href="/customer/dashboard" class="dropdown-item"><i class="uil uil-apps"></i>@localizer["Dashboard"]</a>
+<a href="/customer/orderlist" class="dropdown-item"><i class="uil uil-box"></i>@localizer["Order List"]</a>
+<a href="/customer/wishlist" class="dropdown-item"><i class="uil uil-heart"></i>@localizer["WishList"]</a>
+<a href="/customer/billingprofile" class="dropdown-item"><i class="uil uil-location-point"></i>@localizer["Billing Profile"]</a>
+<a href="/customer/shippingprofile" class="dropdown-item"><i class="uil uil-wallet"></i>@localizer["Shipping Profile"]</a>
+<a href="/customer/changepassword" class="dropdown-item"><i class="uil uil-location-point"></i>@localizer["Change Password"]</a>
+<a href="/customer/changeprofile" class="dropdown-item"><i class="uil uil-gift"></i>@localizer["Change Profile"]</a>
+<a href="LogOut" class="dropdown-item"><i class="uil uil-exit"></i>@localizer["Logout"]</a>
+                                                                        
+                                                        </div>
+                                                        </div>
+											}
+										</span>
+							</a>
+							</Authorized>
+							 <NotAuthorized>
+                                    <a href="/customer/login">
+								<img src="images/avatar/img-5.jpg" alt="">
+								<span class="user__name">
+							 @localizer["Login/Sign Up"]
+							 
+                                    </span>
+									</a>
+                            </NotAuthorized>
+								</AuthorizeView>
+  
+</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="sub-header-group">
+			<div class="sub-header">
+				<div class="ui dropdown" tabindex="0">
+					<a href="#" class="category_drop hover-btn" data-toggle="modal" data-target="#category_model" title="Categories"><i class="uil uil-apps"></i><span class="cate__icon">@localizer["Select Category"]</span></a>
+				<div class="menu" tabindex="-1"></div>
+			</div>
+								<div class="topnav" id="myTopnav">
+  <a href="/" class="active">@localizer["Home"]</a>
+  <a href="/productdetails/@newpro">@localizer["New Products"]</a>
+  <a href="/productdetails/@feature">@localizer["Featured Products"]</a>
+  <a href="/brand">@localizer["Brand"]</a>
+  <a href="/contactus">@localizer["Contact Us"]</a>
+  <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+    <i class="fa fa-bars"></i>
+  </a>
+</div>
+				<div class="catey__icon">
+					<a href="#" class="cate__btn" data-toggle="modal" data-target="#category_model" title="Categories"><i class="uil uil-apps"></i></a>
+				</div>
+				<div class="header_cart order-1">
+					<a href="#" class="cart__btn hover-btn pull-bs-canvas-left" @onclick="ClickCart" title="Cart"><i class="uil uil-shopping-cart-alt"></i><span>@localizer["Cart"]</span><ins>@GetProductCount()</ins><i class="uil uil-angle-down"></i></a>
+				</div>
+			</div>
+		</div>
+	</header>
+@code{
+	[CascadingParameter]
+	public Task<AuthenticationState> authenticationState { get; set; }
+	string newpro = "New Product";
+	string feature = "Featured Product";
+	string category = "Category";
+	int AreaId = 0;
+	string areaempty = "all";
+	string AreaName = string.Empty;
+	IList<Category> listCategory = new List<Category>();
+	IList<Area> listArea = new List<Area>();
+	List<CartItem> cartItems = new List<CartItem>();
+	private CartItem cartItem = new CartItem { Quantity = 1 };
+	bool IsCart = false;
+	decimal DecDelivery = 50;
+	string email = string.Empty;
+	string Id;
+	string Ids;
+	protected async override void OnInitialized()
+	{
+		email = await localStorage.GetItemAsync<string>("email");
+		
+		//Id = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+		if (email == null)
+		{
+			Ids = "0";
+		}
+		else
+		{
+			var authState = await authenticationState;
+			var user = authState.User;
+			Ids = user.FindFirst(ClaimTypes.Name).Value;
+		}
+		IsCart = true;
+		listCategory = await _category.GetAll();
+		listArea = await _area.GetAll();
+		cartItems = await CartService.GetCartItems();
+		CartService.OnChange += StateHasChanged;
+		StateHasChanged();
+	}
+	public void Dispose()
+	{
+		CartService.OnChange -= StateHasChanged;
+	}
+
+	private int GetProductCount()
+	{
+		var cart = LocalStorage.GetItem<List<Product>>("cart");
+		return cart != null ? cart.Count : 0;
+	}
+	private async Task GetProductDetails()
+	{
+		cartItems = await CartService.GetCartItems();
+		CartService.OnChange += StateHasChanged;
+	}
+	private int GetProductWishCount()
+	{
+		var cart = LocalStorage.GetItem<List<Product>>("wishcart");
+		return cart != null ? cart.Count : 0;
+	}
+	private async Task DeleteItem(CartItem item)
+	{
+		await CartService.DeleteItem(item);
+		cartItems = await CartService.GetCartItems();
+	}
+	private async void ClickCart()
+	{
+		IsCart = true;
+		cartItems = await CartService.GetCartItems();
+		CartService.OnChange += StateHasChanged;
+		StateHasChanged();
+	}
+	private async Task AddToCart(CartItem item)
+    {
+        //product = await _productService.GetbyId(Convert.ToInt32(id));
+		if(item.Quantity > 0)
+		{
+        
+		}
+    }
+	private async void IncrementCount(CartItem item)
+    {
+		cartItem.CategoryId = item.CategoryId;
+        cartItem.EditionName = item.Name;
+        cartItem.CartStatus = "Asc";
+        cartItem.Image = item.Image;
+        cartItem.Price = item.Price;
+        cartItem.ProductId = item.ProductId;
+        cartItem.Name = item.EditionName;
+
+        await CartService.AddToCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartItems();
+        StateHasChanged();
+    }
+    private async void DecrementCount(CartItem item)
+    {
+		cartItem.CategoryId = item.CategoryId;
+        cartItem.EditionName = item.Name;
+		cartItem.CartStatus = "Dsc";
+        
+        cartItem.Image = item.Image;
+        cartItem.Price = item.Price;
+        cartItem.ProductId = item.ProductId;
+        cartItem.Name = item.EditionName;
+
+        await CartService.AddToCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartItems();
+        StateHasChanged();
+        
+    }
+	private void Checkout()
+	{
+		navigationManager.NavigateTo("/checkout");
+		IsCart = false;
+	}
+}

@@ -1,0 +1,86 @@
+﻿
+<MudNavMenu Class="mudblazor-navmenu">
+    <div class="docs-nav-fader"></div>
+    
+    <div id="layoutSidenav_nav">
+                <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                    <div class="sb-sidenav-menu">
+                        <div class="nav">
+                            <a class="nav-link active" href="/page/dashboard">
+								<div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                Dashboard
+							</a>
+							<a class="nav-link" href="/page/orders">
+								<div class="sb-nav-link-icon"><i class="fas fa-cart-arrow-down"></i></div>
+                                Orders
+							</a>
+							<a class="nav-link active" href="/page/productlist">
+								<div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                                Product
+							</a>
+                             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+								<div class="sb-nav-link-icon"><i class="fas fa-newspaper"></i></div>
+                                Manage Order
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+							</a>
+                            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+									<a class="nav-link sub_nav_link" href="/page/pendingorders">Pending Order</a>
+									<a class="nav-link sub_nav_link" href="/page/ongoingorders">OnGoing Order</a>
+									<a class="nav-link sub_nav_link" href="/page/deliveredorders">Delivered Order</a>
+									<a class="nav-link sub_nav_link" href="/page/rejectorder">Rejected Orders</a>
+								</nav>
+                            </div>		
+							<a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseLocations" aria-expanded="false" aria-controls="collapseLocations">
+								<div class="sb-nav-link-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                Setting
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+							</a>
+                            <div class="collapse" id="collapseLocations" aria-labelledby="headingTwo" data-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+									<a class="nav-link sub_nav_link" href="/page/categorylist">Category</a>
+									<a class="nav-link sub_nav_link" href="/page/brandlist">Brand</a>
+									<a class="nav-link sub_nav_link" href="/page/arealist">Area</a>
+									<a class="nav-link sub_nav_link" href="/page/countrylist">Country</a>
+									<a class="nav-link sub_nav_link" href="/page/statelist">State</a>
+                                    <a class="nav-link sub_nav_link" href="/page/sliderlist">Slider</a>
+								</nav>
+                            </div>		
+							<a class="nav-link" href="/page/customerlist">
+								<div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                Customers
+							</a>
+                            <a class="nav-link" href="/page/deliveryboylist">
+								<div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                                DeliveryBoy
+							</a>
+							@*<a class="nav-link" href="/page/users">
+								<div class="sb-nav-link-icon"><i class="fas fa-gift"></i></div>
+                                Users
+							</a>*@
+							<a class="nav-link" href="/page/companylist">
+								<div class="sb-nav-link-icon"><i class="fas fa-store"></i></div>
+                                App Setting
+							</a>
+                            <a class="nav-link" href="/page/paymentlist">
+								<div class="sb-nav-link-icon"><i class="fas fa-gift"></i></div>
+                                Payments
+							</a>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+</MudNavMenu>
+
+
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

@@ -1,0 +1,112 @@
+﻿@page "/page/categoryadd"
+@layout AdminLayout
+@inject ICategory _category
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Categories</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Setting</a></li>
+                            <li class="breadcrumb-item"><a href="category.html">Categories</a></li>
+                            <li class="breadcrumb-item active">Add Category</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-lg-6 col-md-6">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Add New Category</h4>
+									</div>
+									<div class="card-body-table">
+										<EditForm Model="master" OnValidSubmit="Save">
+                                            <DataAnnotationsValidator />
+										<div class="news-content-right pd-20">
+											<div class="form-group">
+												<label class="form-label">Name*</label>
+												<input type="text" class="form-control" @bind="master.Name" placeholder="Category Name">
+											<ValidationMessage For="@(() => master.Name)" />
+											</div>
+											<div class="form-group">
+												<label class="form-label">Under*</label>
+												<select class="form-control" @bind="master.ParentId">
+													@foreach(var item in listCategory)
+													{
+														<option value="@item.CategoryId">@item.Name</option>
+													}
+												</select>
+											</div>
+											<div class="form-group">
+												<label class="form-label">Category</label>
+												<input type="text" class="form-control" @bind="master.Quantity" placeholder="Category Name">
+											<ValidationMessage For="@(() => master.Quantity)" />
+											</div>
+											<div class="form-group">
+												<label class="form-label">Category Image*</label>
+												<div class="input-group">
+													<div class="custom-file">
+														<InputFile OnChange="OnFileChange" />
+													</div>
+												</div>
+												<div class="add-cate-img">
+													@if(master.Image !=null)
+                                {
+                                    <img src="@master.Image" width="40" height="60">
+                                }
+											<ValidationMessage For="@(() => master.Image)" />
+												</div>
+											</div>
+											<div class="form-group">
+												<label class="form-label">IsActive*</label>
+												<input type="checkbox" class="form-checkbox" @bind="master.IsActive" placeholder="Category Name">
+											<ValidationMessage For="@(() => master.IsActive)" />
+											</div>
+											<button class="save-btn hover-btn" type="submit">Save</button>
+										</div>
+										</EditForm>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+@code {
+	Category master = new Category();
+	IList<Category> listCategory = new List<Category>();
+	protected async override void OnInitialized()
+	{
+		await LoadData();
+	}
+	private async Task LoadData()
+	{
+		master.IsActive = true;
+		listCategory = await _category.GetAll();
+		StateHasChanged();
+	}
+	private async Task Save()
+	{
+		master.Title = string.Empty;
+		master.link = string.Empty;
+		master.AddedDate = DateTime.Now;
+                var result = await _category.Save(master);
+
+                if (result.IsSuccessStatusCode)
+                {
+					toastService.ShowSuccess("Successfully Saved");
+                    NavigationManager.NavigateTo("/page/categorylist");
+                }
+                else
+                {
+					toastService.ShowError("Already Exists");
+                }
+    }
+	async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        var format = "image/png";
+        var resizedImage = await e.File.RequestImageFileAsync(format, 300, 300);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        master.Image = imageData;
+    }
+}

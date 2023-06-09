@@ -1,0 +1,329 @@
+﻿@page "/single-product/{id}"
+@inject IProduct _productService
+@inject ICategory _categoryService
+@inject ICartService CartService
+@inject ILocalStorageService sessionStorage
+@inject NavigationManager navigationManager
+@inject IToastService toastService
+@inject IJSRuntime JsRuntime
+@using BlazorStrap
+<PageTitle>Product-View</PageTitle>
+
+<div class="gambo-Breadcrumb">
+<div class="container">
+<div class="row">
+<div class="col-md-12">
+<nav aria-label="breadcrumb">
+<ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="/">Home</a></li>
+<li class="breadcrumb-item"><a href="/">@master.CategoryName</a></li>
+<li class="breadcrumb-item active" aria-current="page">@master.Name</li>
+</ol>
+</nav>
+</div>
+</div>
+</div>
+</div>
+<div class="all-product-grid">
+<div class="container">
+<div class="row">
+<div class="col-lg-12">
+<div class="product-dt-view">
+<div class="row">
+<div class="col-lg-4 col-md-4">
+<div id="sync1" class="owl-carousel owl-theme owl-loaded owl-drag">
+
+
+
+
+<div class="owl-stage-outer">
+    <div class="owl-stage" style="">
+        @if(master.Image == null)
+                                        {
+                                            
+                                        }
+                                        else
+                                        {
+                                            <div class="owl-item cloned" style="width: 350px;">
+                                                <div class="item">
+<img src="@master.Image" alt="@master.Name">
+</div></div>
+                                        }
+                                        
+</div>
+</div>
+</div>
+<div id="sync2" class="owl-carousel owl-theme owl-loaded owl-drag">
+
+
+
+
+<div class="owl-stage-outer">
+    <div class="owl-stage" style="transform: translate3d(0px, 0px, 0px); transition: all 0s ease 0s; width: 350px;">
+                                        
+        @foreach (var item in listProductMapping)
+                                        {
+                                            <div class="owl-item active" style="width: 87.5px;">
+                                                <div class="item">
+<img src="@item.PictureName" alt="@item.PicturePath" @onclick="() => SelectImage(item)" >
+</div></div>
+        }
+</div>
+</div>
+</div>
+</div>
+<div class="col-lg-8 col-md-8">
+<div class="product-dt-right">
+<h2>@master.Name</h2>
+<div class="no-stock">
+<p class="stock-qty">Available<span>@master.Quantity (Instock)</span></p>
+</div>
+<div class="product-radio">
+<ul class="product-now">
+    @if(varient == null)
+                                        {
+                                            
+                                        }
+                                        else
+                                        {
+                                        @foreach(var item in varient)
+
+{
+    <li>
+<input type="radio" id="p1" name="product1">
+<a @onclick="()=>GetVarient(item)" style="cursor:pointer;"><label for="p1"> @item.Variation></label></a>
+</li>
+}
+                                        }
+</ul>
+</div>
+<p class="pp-descp">@master.ProductType</p>
+<div class="product-group-dt">
+<ul>
+<li><div class="main-price color-discount">Price<span>@master.SalePrice</span></div></li>
+<li><div class="main-price mrp-price">Original Price<span>@master.OriginalPrice</span></div></li>
+</ul>
+<ul class="gty-wish-share">
+<li>
+<div class="qty-product">
+<div class="quantity buttons_added">
+<input value="-" class="minus minus-btn" @onclick="DecrementCount" />
+                                                    <input class="quantity" @bind="cartItem.Quantity" type="number">
+                                                    <input value="+" class="plus plus-btn" @onclick="IncrementCount" />
+                                                
+</div>
+</div>
+</li>
+
+</ul>
+<ul class="ordr-crt-share">
+<li><button class="add-cart-btn hover-btn" @onclick="() =>AddToCartSingle()"><i class="uil uil-shopping-cart-alt"></i>Add to Cart</button></li>
+<li>
+    <span class="like-icon save-icon" @onclick="() =>AddToWishCart(master)" title="wishlist"></span>
+    </li>
+</ul>
+</div>
+<div class="pdp-details">
+<ul>
+<li>
+<div class="pdp-group-dt">
+<div class="pdp-icon"><i class="uil uil-usd-circle"></i></div>
+<div class="pdp-text-dt">
+<span>Lowest Price Guaranteed</span>
+<p>Get difference refunded if you find it cheaper anywhere else.</p>
+</div>
+</div>
+</li>
+<li>
+<div class="pdp-group-dt">
+<div class="pdp-icon"><i class="uil uil-cloud-redo"></i></div>
+<div class="pdp-text-dt">
+<span>Easy Returns &amp; Refunds</span>
+<p>Return products at doorstep and get refund in seconds.</p>
+</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-lg-4 col-md-12">
+<div class="pdpt-bg">
+<div class="pdpt-title">
+<h4>More Like This</h4>
+</div>
+<div class="pdpt-body scrollstyle_4">
+    @foreach(var item in listrealtedCategory)
+    {
+<div class="cart-item border_radius">
+<a @onclick="() => Select(item)" style="cursor:pointer;" class="cart-product-img">
+<img src="@item.Image" alt="">
+<div class="offer-badge">@item.Discount</div>
+</a>
+<div class="cart-text">
+<h4>@item.Name</h4>
+<div class="cart-radio">
+</div>
+<div class="qty-group">
+<div class="cart-item-price">$@item.SalePrice <span>$@item.OriginalPrice</span></div>
+</div>
+</div>
+</div>
+}
+</div>
+</div>
+</div>
+<div class="col-lg-8 col-md-12">
+<div class="pdpt-bg">
+<div class="pdpt-title">
+<h4>Product Details</h4>
+</div>
+<div class="pdpt-body scrollstyle_4">
+<div class="pdct-dts-1">
+<div class="pdct-dt-step">
+<h4>Description</h4>
+<p>
+    @((MarkupString)myMarkup)
+    </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+@code {
+    [Parameter]
+    public string id { get; set; }
+    decimal price = 1;
+    string Symbol = "$";
+    List<CartItem> cartItems = new List<CartItem>();
+    List<CartItem> cartwishItems = new List<CartItem>();
+    private Product product = new Product();
+    private ProductView master = new ProductView();
+    IList<Category> listMenu = new List<Category>();
+    private int currentCount = 1;
+    private int currentEditionId = 1;
+    public string name = string.Empty;
+    IList<ProductPictureMapping> listProductMapping = new List<ProductPictureMapping>();
+    private CartItem cartItem = new CartItem { Quantity = 1 };
+    private CartItem cartwishItem = new CartItem { Quantity = 1 };
+    IList<Product> listSale = new List<Product>();
+    //GetRelatedProduct
+    IList<Product> listrealtedCategory = new List<Product>();
+    IList<ProductVariation> varient = new List<ProductVariation>();
+    string category = "Category";
+    string brand = "Brand";
+    string myMarkup;
+    int storeName;
+    protected async override void OnInitialized()
+    {
+        listMenu = await _categoryService.GetAll();
+        master = await _productService.GetbydetailsId(Convert.ToInt32(id));
+        myMarkup = $"<p class='markup'>{master.Description}.</p>";
+        storeName = master.UserId;
+        varient = await _productService.GetAllProductVariation( Convert.ToInt32(id));
+        listProductMapping = await _productService.GetAllProductMapping(Convert.ToInt32(id));
+        listSale = await _productService.GetAllSales();
+        listrealtedCategory = await _productService.GetAllByCategoryId(master.CategoryId);
+        cartItems = await CartService.GetCartItems();
+        cartwishItems = await CartService.GetCartWishItems();
+        StateHasChanged();
+    }
+    private ProductView GetSelectedVariant()
+    {
+        var variant = product.Variants.FirstOrDefault(v => v.CategoryId == currentEditionId);
+        return variant;
+    }
+    private async Task AddToCartSingle()
+    {
+
+
+        cartItem.CategoryId = master.CategoryId;
+        cartItem.EditionName = master.Name;
+        cartItem.Image = master.Image;
+        cartItem.Price = master.SalePrice;
+        cartItem.ProductId = master.ProductId;
+        cartItem.Name = master.Name;
+        cartItem.UserId = master.UserId;
+        await CartService.AddToCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartItems();
+        StateHasChanged();
+    }
+    private async Task AddToCart(Product item)
+    {
+
+
+        cartItem.CategoryId = item.CategoryId;
+        cartItem.EditionName = item.Name;
+        cartItem.Image = item.Image;
+        cartItem.Price = item.SalePrice;
+        cartItem.ProductId = item.ProductId;
+        cartItem.Name = item.Name;
+        cartItem.UserId = master.UserId;
+        await CartService.AddToCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartItems();
+        StateHasChanged();
+    }
+    private async Task AddToWishCart(ProductView item)
+    {
+
+
+        cartwishItem.CategoryId = item.CategoryId;
+        cartwishItem.EditionName = item.Name;
+        cartwishItem.Image = item.Image;
+        cartwishItem.Price = item.SalePrice;
+        cartwishItem.ProductId = item.ProductId;
+        cartwishItem.Name = item.Title;
+        cartwishItem.UserId = master.UserId;
+        await CartService.AddToWishCart(cartwishItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartwishItems = await CartService.GetCartWishItems();
+        StateHasChanged();
+    }
+    private void IncrementCount()
+    {
+        cartItem.Quantity = currentCount++;
+    }
+    private void DecrementCount()
+    {
+        cartItem.Quantity = currentCount--;
+    }
+    private async void Search()
+    {
+        if (name == string.Empty)
+        {
+
+        }
+        else
+        {
+            navigationManager.NavigateTo($"/product/shop-detailssearch/{name}");
+        }
+    }
+    private async Task Select(Product product)
+    {
+        master = await _productService.GetbydetailsId(product.ProductId);
+        listProductMapping = await _productService.GetAllProductMapping(product.ProductId);
+    }
+    private void GetVarient(ProductVariation item)
+    {
+        master.SalePrice = item.Price;
+    }
+    private async Task SelectImage(ProductPictureMapping mapping)
+    {
+        master.Image = mapping.PictureName;
+        StateHasChanged();
+    }
+    private void indexChanged(int index)
+    {
+        Console.WriteLine("Index Changed: " + index);
+    }
+}

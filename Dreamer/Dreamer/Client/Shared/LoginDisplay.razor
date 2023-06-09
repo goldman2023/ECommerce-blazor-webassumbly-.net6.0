@@ -1,0 +1,30 @@
+﻿@inject NavigationManager navManager
+@using System.Security.Claims
+<AuthorizeView>
+    <Authorized>
+        
+            <nav class="" style="width:100%;">
+            <ul class="navbar-nav ml-auto mr-md-0" style="float:right;">
+                <li class="nav-item dropdown">
+                    <a style="color:#000000;" class="nav-link dropdown-toggle" id="userDropdown" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fas fa-user fa-fw"></i>Hello, @context.User.FindFirst(ClaimTypes.Email).Value</a>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                        <a class="dropdown-item admin-dropdown-item" href="/page/userprofile">Edit Profile</a>
+						@*<a class="dropdown-item admin-dropdown-item" href="change_password.html">Change Password</a>*@
+                        <a class="dropdown-item admin-dropdown-item" href="logout">Logout</a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        
+    </Authorized>
+    <NotAuthorized>
+        <div class="inner-button" style="margin: 0 auto;width: 260px;margin-top: 174px;">
+                            <a href="admin/login" class="btn btn-primary">Click here(Demo)</a>
+                        </div>
+        @*<a href="Identity/Account/Register">Register</a>*@
+        @*@*<a href="Identity/Account/Login">Login</a>*@
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+
+}

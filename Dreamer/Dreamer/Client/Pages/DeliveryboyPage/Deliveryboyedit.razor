@@ -1,0 +1,134 @@
+﻿@page "/page/deliveryboyedit/{id}"
+@layout AdminLayout
+@inject IStringLocalizer<Resource> localizer
+@inject ISyncLocalStorageService LocalStorage
+@inject ILocalStorageService localStorage
+@inject ICustomer _customer
+@inject NavigationManager navigationManager
+@using System.IO
+@using System.Security.Claims
+@inject IToastService toastService
+@attribute [Authorize]
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Deliveryboy</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Deliveryboy</a></li>
+                            <li class="breadcrumb-item"><a>Deliveryboy</a></li>
+                            <li class="breadcrumb-item active">Add Deliveryboy</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-lg-5 col-md-6">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Add New Deliveryboy</h4>
+									</div>
+									<div class="card-body-table">
+										<EditForm Model="userInfo" OnValidSubmit="CreateUser">
+    <DataAnnotationsValidator />
+    <div class="news-content-right pd-20">
+    <div class="form-group">
+        <label>First Name:</label>
+        <div>
+            <input type="text" class="form-control" @bind="@userInfo.FirstName" />
+            <ValidationMessage For="@(() => userInfo.FirstName)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Last Name:</label>
+        <div>
+            <input type="text" class="form-control" @bind="@userInfo.LastName" />
+            <ValidationMessage For="@(() => userInfo.LastName)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Mobile No</label>
+        <div>
+            <input type="text" class="form-control" @bind="@userInfo.MobileNo" />
+            <ValidationMessage For="@(() => userInfo.MobileNo)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Phone</label>
+        <div>
+            <input type="text" class="form-control" @bind="@userInfo.Phone" />
+            <ValidationMessage For="@(() => userInfo.Phone)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Address</label>
+        <div>
+            <input type="text" class="form-control" @bind="@userInfo.Address" />
+            <ValidationMessage For="@(() => userInfo.Address)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Gender</label>
+        <div>
+            <select class="form-control" @bind="@userInfo.Gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Email:</label>
+        <div>
+            <input type="text" class="form-control" @bind="@userInfo.Email" />
+            <ValidationMessage For="@(() => userInfo.Email)" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Password:</label>
+        <div>
+            <input type="password" class="form-control" @bind="@userInfo.Password" />
+            <ValidationMessage For="@(() => userInfo.Password)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Confirm Password:</label>
+        <div>
+            <input type="password" class="form-control" @bind="@userInfo.ConfirmPassword" />
+            <ValidationMessage For="@(() => userInfo.ConfirmPassword)" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Register</button>
+    </div>
+</EditForm>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+    private CustomerMaster userInfo = new CustomerMaster();
+    protected async override void OnInitialized()
+    {
+        userInfo = await _customer.GetbyId(Convert.ToInt32(id));
+        StateHasChanged();
+    }
+    private async Task CreateUser()
+    {
+        userInfo.RoleId = 4;
+        userInfo.Image = string.Empty;
+        userInfo.City = string.Empty;
+        userInfo.CreatedOn = DateTime.Now;
+        userInfo.IsActive = true;
+        var result = await _customer.Update(userInfo);
+        if (result.IsSuccessStatusCode)
+        {
+        toastService.ShowSuccess("Successfully Updated");
+        navigationManager.NavigateTo("/page/deliveryboylist");
+        }
+        else
+        {
+        toastService.ShowInfo("Failed");
+        }
+        StateHasChanged();
+    }
+}

@@ -1,0 +1,17 @@
+﻿@page "/logout"
+
+@inject ILoginService loginService
+@inject ILocalStorageService localStorage
+@inject NavigationManager navigationManager
+
+
+<text>Login out...</text>
+
+@code{
+    protected async override Task OnInitializedAsync()
+    {
+        await loginService.Logout();
+       await localStorage.RemoveItemAsync("email");
+        navigationManager.NavigateTo("");
+    }
+}

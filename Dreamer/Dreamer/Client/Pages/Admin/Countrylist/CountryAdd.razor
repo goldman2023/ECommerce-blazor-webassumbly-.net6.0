@@ -1,0 +1,59 @@
+﻿@page "/page/countryadd"
+@layout AdminLayout
+@inject ICountry _area
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Country</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Setting</a></li>
+                            <li class="breadcrumb-item"><a>Country</a></li>
+                            <li class="breadcrumb-item active">Add Country</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-lg-5 col-md-6">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Add New Country</h4>
+									</div>
+									<div class="card-body-table">
+										<EditForm Model="master" OnValidSubmit="Save">
+                                            <DataAnnotationsValidator />
+										<div class="news-content-right pd-20">
+											<div class="form-group">
+												<label class="form-label">Name*</label>
+												<input type="text" class="form-control" @bind="master.Name" placeholder="Area Name">
+											<ValidationMessage For="@(() => master.Name)" />
+                                            </div>
+											<button class="save-btn hover-btn" type="submit">Save</button>
+										</div>
+										</EditForm>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+@code {
+    Country master = new Country();
+    protected async override void OnInitialized()
+    {
+
+    }
+    private async Task Save()
+    {
+        var result = await _area.Save(master);
+
+        if (result.IsSuccessStatusCode)
+        {
+            toastService.ShowSuccess("Successfully Saved");
+            NavigationManager.NavigateTo("/page/countrylist");
+        }
+        else
+        {
+            toastService.ShowInfo("Already Exists.");
+        }
+    }
+}

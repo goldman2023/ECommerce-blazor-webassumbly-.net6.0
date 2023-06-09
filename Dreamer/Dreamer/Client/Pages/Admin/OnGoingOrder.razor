@@ -1,0 +1,79 @@
+﻿@page "/page/ongoingorders"
+@layout AdminLayout
+@inject IOrderBilling _billing
+@attribute [Authorize]
+<div class="container-fluid">
+            <div class="row justify-content-between">
+
+
+
+               <div class="col-lg-12 col-md-12">
+                   <div class="card card-static-2 mt-30 mb-30">
+
+                           <div class="card-body-table">
+                               <div class="table-responsive">
+                                   <h2>Ongoing Order List</h2>
+                                   @if(listOrderMaster == null)
+                                   {
+
+                                   }
+                                   else
+                        {
+                            
+                        <table class="table">
+                                       <thead>
+<tr>
+    <th>Order No</th>
+        <th>Customer Name</th>
+        <th>Order Date</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th></th>
+</tr>
+                                       </thead>
+                                       <tbody>
+                                           @foreach(var item in listOrderMaster)
+                                           {
+                                           <tr>
+                                               <td>@item.OrderNo</td>
+                                               <td>@item.FirstName &nbsp;&nbsp;@item.LastName</td>
+                                               <td>@item.OrderDate</td>
+                                               <td>@item.Total</td>
+                                               <td><span class="badge badge-warning  light"> @item.IsActive </span>
+                                                    </td>
+                                           </tr>
+                                           }
+                                       </tbody>
+                                   </table>
+                        }
+</div>
+                           </div>
+</div>
+</div>
+            </div>
+</div>
+
+@code {
+    IList<OrderMaster> listOrderMaster;
+    private bool dense = true;
+    private bool hover = true;
+    private bool striped = true;
+    private bool bordered = true;
+    private string searchString1 = "";
+    private string searchString2 = "";
+    protected async override void OnInitialized()
+    {
+        listOrderMaster = await _billing.GetAllOnGoingOrderAdmin();
+        StateHasChanged();
+    }
+    private bool Search(OrderMaster element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString1))
+            return true;
+        if (element.OrderNo.Contains(searchString1, StringComparison.OrdinalIgnoreCase))
+            return true;
+        //if (element.AddedDate.Contains(searchString1, StringComparison.OrdinalIgnoreCase))
+        //    return true;
+        return false;
+    }
+}

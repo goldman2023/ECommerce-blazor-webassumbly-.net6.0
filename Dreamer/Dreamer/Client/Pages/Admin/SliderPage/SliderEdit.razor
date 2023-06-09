@@ -1,0 +1,97 @@
+﻿@page "/page/slideredit/{id}"
+@layout AdminLayout
+@inject ISlider _area
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Slider</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Setting</a></li>
+                            <li class="breadcrumb-item"><a>Slider</a></li>
+                            <li class="breadcrumb-item active">Edit Slider</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-lg-5 col-md-6">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Edit Slider</h4>
+									</div>
+									<div class="card-body-table">
+										<EditForm Model="master" OnValidSubmit="Save">
+                                            <DataAnnotationsValidator />
+										<div class="news-content-right pd-20">
+                                            <div class="form-group">
+												<label class="form-label">Cover</label>
+												<InputFile OnChange="OnFileChange" />
+                                                @if(master.Image !=null)
+                                {
+                                    <img src="@master.Image" width="40" height="60">
+                                }
+											<ValidationMessage For="@(() => master.Image)" />
+                                            </div>
+											<div class="form-group">
+												<label class="form-label">Name*</label>
+												<input type="text" class="form-control" @bind="master.Name">
+											<ValidationMessage For="@(() => master.Name)" />
+                                            </div>
+											<div class="form-group">
+												<label class="form-label">Short Description</label>
+												<input type="text" @bind="master.ShortDescription" class="form-control">
+											</div>
+                                            <div class="form-group">
+												<label class="form-label">Description</label>
+												<input type="text" @bind="master.Description" class="form-control">
+											</div>
+											<button class="save-btn hover-btn" type="submit">Save</button>
+										</div>
+										</EditForm>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+    Slider master = new Slider();
+    protected async override void OnInitialized()
+    {
+        master = await _area.GetbyId(Convert.ToInt32(id));
+        StateHasChanged();
+    }
+    private async Task Save()
+    {
+        toastService.ShowSuccess("demo version cannot add delete or modify");
+            NavigationManager.NavigateTo("/page/sliderlist");
+        //var result = await _area.Update(master);
+
+        //if (result.IsSuccessStatusCode)
+        //{
+        //    toastService.ShowSuccess("Successfully Saved");
+        //    NavigationManager.NavigateTo("/page/sliderlist");
+        //}
+        //else
+        //{
+        //    toastService.ShowInfo("Already Exists.");
+        //}
+    }
+    async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        var format = "image/png";
+        var resizedImage = await e.File.RequestImageFileAsync(format, 300, 300);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        if (imageData == null)
+        {
+            master.Image = string.Empty;
+        }
+        else
+        {
+            master.Image = imageData;
+        }
+    }
+}

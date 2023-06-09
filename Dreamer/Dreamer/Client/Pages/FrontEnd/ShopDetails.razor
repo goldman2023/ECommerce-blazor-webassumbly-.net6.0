@@ -1,0 +1,293 @@
+﻿@page "/shop-details/{id}/{namepro}"
+@inject IProduct _productService
+@inject ICategory _categoryService
+@inject IBrand _brand
+@inject ICartService CartService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager navigationManager
+@inject IToastService toastService
+@inject IJSRuntime JsRuntime
+<PageTitle>Shop-Details</PageTitle>
+<div class="gambo-Breadcrumb">
+<div class="container">
+<div class="row">
+<div class="col-md-12">
+<nav aria-label="breadcrumb">
+<ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="/">Home</a></li>
+<li class="breadcrumb-item active" aria-current="page">@namepro</li>
+</ol>
+</nav>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+<div class="all-product-grid">
+<div class="container">
+<div class="row">
+<div class="col-lg-12">
+<div class="product-top-dt">
+<div class="product-left-title">
+<h2>@namepro</h2>
+</div>
+<a style="cursor:pointer;" @onclick="Show" class="filter-btn pull-bs-canvas-right">Filters</a>
+<div class="product-sort">
+<div class="ui selection dropdown vchrt-dropdown" tabindex="0">
+<input name="gender" type="hidden" value="default">
+    <div class="menu" tabindex="-1"></div>
+<div class="" tabindex="-1">
+<select class="" style="width:200px;border:0px;" @bind="ChangeId" @onclick="() => lowtohigh()">
+                                        <option value="0">Price (Low to High)</option>
+                                        <option value="1">Price (High to Low)</option>
+                                        <option value="2">Discount (High to Low)</option>
+                                        <option value="3">Name (A to Z)</option>
+                                    </select>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="product-list-view">
+<div class="row">
+    @foreach(var item in listSubProduct)
+    {
+<div class="col-lg-3 col-md-6">
+<div class="product-item mb-30">
+<a href="/single-product/@item.ProductId" class="product-img">
+<img src="@item.Image" alt="">
+<div class="product-absolute-options">
+<span class="offer-badge-1">@item.Discount off</span>
+</div>
+</a>
+<div class="product-text-dt">
+<p>Available<span>@item.Quantity (In Stock)</span></p>
+<h4><a href="/single-product/@item.ProductId">@item.Name</a></h4>
+<div class="product-price">$@item.SalePrice <span>$@item.OriginalPrice</span></div>
+<div class="qty-cart">
+<span class="like-icon" @onclick="() => AddToWishCart(item)" title="wishlist"></span>
+<span class="cart-icon" @onclick="() => AddToCart(item)"><i class="uil uil-shopping-cart-alt"></i></span>
+</div>
+</div>
+</div>
+</div>
+}
+</div>
+</div>
+</div>
+</div>
+
+
+<div class="bs-canvas bs-canvas-right position-fixed bg-cart h-100">
+<div class="bs-canvas-header side-cart-header p-3 ">
+<div class="d-inline-block  main-cart-title">Filters</div>
+<button type="button" class="bs-canvas-close close" aria-label="Close"><i class="uil uil-multiply"></i></button>
+</div>
+<div class="bs-canvas-body filter-body">
+<div class="filter-items">
+<div class="filtr-cate-title">
+<h4>Categories</h4>
+</div>
+<div class="filter-item-body scrollstyle_4">
+<div class="cart-radio">
+<ul class="cte-select">
+    @foreach(var item in listCategory)
+    {
+<li>
+@*<input type="radio" id="c1" name="category1">*@
+<a style="cursor:pointer;" @onclick="() =>SelectCategory(item.CategoryId)">
+<label for="c1">@item.Name</label>
+</a>
+</li>
+    }
+</ul>
+</div>
+</div>
+</div>
+<div class="filter-items">
+<div class="filtr-cate-title">
+<h4>Brand</h4>
+</div>
+<div class="filter-item-body scrollstyle_4">
+<div class="cart-radio">
+<ul class="cte-select">
+    @foreach(var item in listBrand)
+    {
+<li>
+@*<input type="radio" id="c1" name="category1">*@
+<a style="cursor:pointer;" @onclick="() =>SelectBrand(item.BrandId , item.BrandName)">
+<label for="c1">@item.BrandName</label>
+</a>
+</li>
+    }
+</ul>
+</div>
+</div>
+</div>
+<div class="filter-items">
+<div class="filtr-cate-title">
+<h4>Price</h4>
+</div>
+<div class="price-pack-item-body scrollstyle_4">
+<div class="brand-list" style="margin-top:-16px;">
+From
+<input type="text" class="form-control" @bind="FromRate">
+To<input type="text" class="form-control" @bind="ToRate">
+<button type="button" class="pl-2 pr-2 btn btn-secondary btn-lg" @onclick="()=> SearchRate()"><i class="la la-search la-flip-horizontal fs-18"></i>
+   Search</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+@code {
+    [Parameter]
+    public string id { get; set; }
+    [Parameter]
+    public string namepro { get; set; }
+
+
+
+    List<CartItem> cartItems = new List<CartItem>();
+    List<CartItem> cartwishItems = new List<CartItem>();
+    private Product product = new Product();
+    private int currentEditionId = 1;
+    public string name = string.Empty;
+    private CartItem cartItem = new CartItem { Quantity = 1 };
+    private CartItem cartwishItem = new CartItem { Quantity = 1 };
+    IList<Category> listCategory = new List<Category>();
+    IList<Brand> listBrand = new List<Brand>();
+    IEnumerable<Product> listSubProduct = new List<Product>();
+    private IEnumerable<Product> comments = Enumerable.Empty<Product>();
+    bool showFalse = true;
+    decimal FromRate = 0;
+    decimal ToRate = 0;
+    decimal price = 1;
+    string Symbol = "$";
+    int ChangeId = 0;
+    bool singleColumn = false;
+    private event Action OnChange;
+    bool isShow = false;
+    protected async override void OnParametersSet()
+    {
+        listSubProduct = await _productService.GetAllByCategoryId(Convert.ToInt32(id));
+        listCategory = await _categoryService.GetAll();
+        listBrand = await _brand.GetAll();
+        cartItems = await CartService.GetCartItems();
+        cartwishItems = await CartService.GetCartWishItems();
+        showFalse = false;
+        StateHasChanged();
+    }
+    private async void SearchRate()
+    {
+        listSubProduct = await _productService.GetAllByRate(FromRate , ToRate);
+        StateHasChanged();
+    }
+    private async void SelectedChange(int categoryId)
+    {
+        listSubProduct = await _productService.GetAllByCategoryId(categoryId);
+        StateHasChanged();
+    }
+    private async void ChangeSubCategory(int SubCatId , string name)
+    {
+        listSubProduct = await _productService.GetAllByCategoryId(SubCatId);
+        namepro = name;
+        StateHasChanged();
+    }
+    private async void SelectCategory(int categoryid)
+    {
+        listSubProduct = await _productService.GetAllByCategoryId(categoryid);
+        StateHasChanged();
+    }
+    private async void lowtohigh()
+    {
+        if (ChangeId == 0)
+        {
+            listSubProduct = await _productService.Lowtohigh();
+            StateHasChanged();
+        }
+        else if (ChangeId == 1)
+        {
+            listSubProduct = await _productService.Hightolow();
+            StateHasChanged();
+        }
+        if (ChangeId == 2)
+        {
+            listSubProduct = await _productService.Discountlowtohigh();
+            StateHasChanged();
+        }
+        if (ChangeId == 3)
+        {
+            listSubProduct = await _productService.Sortatoz();
+            StateHasChanged();
+        }
+        else
+        {
+
+        }
+    }
+    private async void SelectBrand(int brandid , string brandName)
+    {
+        listSubProduct = await _productService.GetAllByBrandId(brandid);
+        namepro = brandName;
+        StateHasChanged();
+    }
+    private async Task AddToCart(Product item)
+    {
+
+
+        cartItem.CategoryId = item.CategoryId;
+        cartItem.EditionName = item.Name;
+        cartItem.Image = item.Image;
+        cartItem.Price = item.SalePrice;
+        cartItem.ProductId = item.ProductId;
+        cartItem.Name = item.Name;
+        cartItem.UserId = item.UserId;
+        await CartService.AddToCart(cartItem);
+        toastService.ShowSuccess("Successfully add to cart.");
+        cartItems = await CartService.GetCartItems();
+        StateHasChanged();
+    }
+    private async Task AddToWishCart(Product item)
+    {
+
+
+        cartwishItem.CategoryId = item.CategoryId;
+        cartwishItem.EditionName = item.Name;
+        cartwishItem.Image = item.Image;
+        cartwishItem.Price = item.SalePrice;
+        cartwishItem.ProductId = item.ProductId;
+        cartwishItem.Name = item.Name;
+        cartwishItem.UserId = item.UserId;
+        await CartService.AddToWishCart(cartwishItem);
+        toastService.ShowSuccess("Successfully add to wishcart.");
+        cartwishItems = await CartService.GetCartWishItems();
+        StateHasChanged();
+    }
+    private async void chkShow(int id)
+    {
+        isShow = true;
+        listSubProduct = await _productService.GetAllByCategoryId(id);
+        StateHasChanged();
+    }
+    private void SingleColumn()
+    {
+        singleColumn = true;
+    }
+    private void MultiColumn()
+    {
+        singleColumn = false;
+    }
+    private void Show()
+    {
+        showFalse = true;
+    }
+    private void Close()
+    {
+        showFalse = false;
+    }
+}

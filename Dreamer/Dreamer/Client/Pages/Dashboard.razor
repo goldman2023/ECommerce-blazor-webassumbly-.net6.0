@@ -1,0 +1,287 @@
+﻿@page "/page/dashboard"
+@using System.Globalization
+@layout AdminLayout
+@inject IOrderBilling _billing
+@inject ICustomer _customer
+@inject NavigationManager navigationManager
+@inject IToastService toastService
+@attribute [Authorize]
+<PageTitle>Dashboard</PageTitle>
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Dashboard</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item active">Dashboard</li>
+                        </ol>
+                        <div class="row">
+                            <div class="col-xl-3 col-md-6">
+                                <div class="dashboard-report-card purple">
+									<div class="card-content">
+										<span class="card-title">Order Pending</span>
+										<span class="card-count">@OrderPending</span>
+									</div>
+									<div class="card-media">
+										<i class="fab fa-rev"></i>
+									</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+								<div class="dashboard-report-card red">
+									<div class="card-content">
+										<span class="card-title">Order Cancel</span>
+										<span class="card-count">@OrderCancel</span>
+									</div>
+									<div class="card-media">
+										<i class="far fa-times-circle"></i>
+									</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="dashboard-report-card info">
+									<div class="card-content">
+										<span class="card-title">Order Process</span>
+										<span class="card-count">@OnGoing</span>
+									</div>
+									<div class="card-media">
+										<i class="fas fa-sync-alt rpt_icon"></i>
+									</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+								<div class="dashboard-report-card success">
+									<div class="card-content">
+										<span class="card-title">Total Income</span>
+										<span class="card-count">@TotalIncome</span>
+									</div>
+									<div class="card-media">
+										<i class="fas fa-money-bill rpt_icon"></i>
+									</div>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-xl-12 col-md-12">
+								<div class="card card-static-1 mb-30">
+									<div class="card-body">
+                                        <text x="517" text-anchor="middle" class="highcharts-title" data-z-index="4" style="color:#333333;font-size:18px;fill:#333333;" y="24" aria-hidden="true"><tspan>Order Summary</tspan></text>
+										<text x="517" text-anchor="middle" class="highcharts-subtitle" data-z-index="4" style="color:#666666;fill:#666666;" y="44" aria-hidden="true"><tspan>Show monthly wise order graph.</tspan></text>
+                                        <RadzenChart>
+                                            
+                    <RadzenLineSeries Smooth="@smooth" Data="@listOrderMaster" CategoryProperty="OrderDate" Title="Order" ValueProperty="Total">
+                        <RadzenMarkers MarkerType="MarkerType.Circle" />
+                    </RadzenLineSeries>
+                    <RadzenCategoryAxis Padding="20" FormatString="{0:MMM}" />
+                    <RadzenValueAxis Formatter="@FormatAsUSD">
+                        <RadzenGridLines Visible="true" />
+                        <RadzenAxisTitle Text="Order in USD" />
+                    </RadzenValueAxis>
+                </RadzenChart>
+                                    </div>
+								</div>
+							</div>
+							<div class="col-xl-12 col-md-12">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Recent Orders</h4>
+									</div>
+									<div class="card-body-table">
+										<div class="table-responsive">
+											@if (listOrderMaster == null)
+                        {
+
+                        }
+                        else
+                        {
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th><div class="th-content">S.No</div></th>
+                                                    <th><div class="th-content">Order No</div></th>
+                                                    <th><div class="th-content">Order Date</div></th>
+                                                    <th><div class="th-content">Total</div></th>
+                                                    <th><div class="th-content">Status</div></th>
+                                                    <th><div class="th-content">Action</div></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{
+                                                    int sno = 0;
+                                                }
+                                                @foreach (var item in listOrderMaster)
+                                {
+                                                <tr>
+                                                    <td>@{sno++;}
+                                    @sno</td>
+                                                    <td>@item.OrderNo</td>
+                                                    <td>@item.OrderDate</td>
+                                                    <td>@item.Total</td>
+                                                    <td>
+                                                        @if(item.IsActive == "Order")
+                                                    {
+                                                        <span class="badge badge-info light"> @item.IsActive </span>
+                                                    }
+                                                    else if(item.IsActive == "OnGoing")
+                                                    {
+                                                        <span class="badge badge-warning  light"> @item.IsActive </span>
+                                                    }
+                                                   else if(item.IsActive == "Cancelled")
+                                                    {
+                                                        <span class="badge badge-danger light"> @item.IsActive </span>
+                                                    }
+                                                    else if(item.IsActive == "Delivered")
+                                                    {
+                                                        <span class="badge badge-success-teal light"> @item.IsActive </span>
+                                                    }
+                                                    else if(item.IsActive == "Rejected")
+                                                    {
+                                                        <span class="badge badge-danger light"> @item.IsActive </span>
+                                            }
+                                                    else
+                                                    {
+                                                        
+                                                    }
+
+                                                    </td>
+                                                    <td>
+                                                        <div class="d-flex">
+                                                            <div class="dropdown">
+                                                                <button class="btn btn-light btn-xs dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                                                                    Action
+                                                                    </button>
+                                                                    <div class="dropdown-menu dropdown-menu-right" style="">
+                                                                        <a class="dropdown-item" href="/manageorder/@item.OrderMasterId"> Order Details</a>
+                                                                        <a class="dropdown-item" data-toggle="modal" data-target="#category_model" style="cursor:pointer;" @onclick="() =>ModalShow(item.OrderMasterId)">
+                                                                            Assign Delivery Boy</a>
+                                                                            @*<a class="dropdown-item" href="https://greenstore.trickycode.xyz/admin/orders/assign_delivery_boy/85" data-title="Delete">
+                                                                            Delete</a>*@</div></div>
+                                                            @*<a href="javascript:void(0);" class="bs-tooltip font-20 text-primary ml-2" title="" data-original-title="Edit"><i class="las la-pen"></i></a>*@
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                        }
+										</div>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+                    @if (showModal)
+{
+
+
+
+    <div id="category_model" class="header-cate-model main-gambo-model modal fade" tabindex="-1" role="dialog" aria-modal="false">
+        <div class="modal-dialog category-area" role="document">
+            <div class="category-area-inner">
+                <div class="modal-header">
+                    <button type="button" class="close btn-close" data-dismiss="modal" aria-label="Close">
+						<i class="uil uil-multiply"></i>
+                    </button>
+                </div>
+                <div class="category-model-content modal-content"> 
+					<div class="cate-header">
+						<h4>Assign Delivery Boy</h4>
+					</div>
+                    <div class="row">
+                        <div class="col-lg-8 col-md-8" style="margin-left: 10px;padding: 12px;">
+                    <div class="form-group">
+												<label class="form-label">Delivery Boy*</label>
+                                                <select class="form-control" @bind="deliveryboyId">
+                                                    <option value="0">Choose DeliveryBoy</option>
+                                                    @foreach(var item in listDeliveryboy)
+                                    {
+                                        <option value="@item.CustomerId">@item.FirstName &nbsp; @item.LastName</option>
+                                    }
+                                </select>
+                                            </div>
+                                            <div class="form-group">
+												<label class="form-label">Delivery Status</label>
+                                                <select class="form-control" @bind="isActive">
+                                                <option value="Order">Order</option>
+                                                <option value="OnGoing">OnGoing</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                                <option value="Delivered">Delivered</option>
+                                                <option value="Rejected">Rejected</option>
+                                            </select>
+                                            </div>
+                    <button type="button" class="btn btn-primary" @onclick=@ModalOk>Save</button>
+					@*<a href="#" class="morecate-btn"><i class="uil uil-apps"></i>More Categories</a>*@
+                   </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    bool smooth = false;
+    IList<OrderMaster> listOrderMaster;
+    IList<OrderDetailsView> listBestSeller;
+    IList<CustomerMaster> listDeliveryboy = new List<CustomerMaster>();
+    OrderMaster master = new OrderMaster();
+    int OrderPending = 0;
+    int OrderCancel = 0;
+    int OnGoing = 0;
+    decimal TotalIncome = 0;
+    bool showModal = false;
+    string deliveryboyId = string.Empty;
+    string isActive;
+    protected async override void OnInitialized()
+    {
+        var Order = await _billing.OrderPending();
+        OrderPending = Order.OrderPending;
+        var orderCan = await _billing.OrderCancel();
+        OrderCancel = orderCan.OrderCancel;
+        var OnGoingss = await _billing.OnGoing();
+        OnGoing = OnGoingss.OnGoing;
+        var Income = await _billing.TotalIncome();
+        TotalIncome = Income.TotalIncome;
+
+
+        listOrderMaster = await _billing.GetAll();
+        listDeliveryboy = await _customer.GetAll(4);
+        showModal = true;
+        StateHasChanged();
+    }
+    async void ModalShow(long id)
+    {
+        isActive = "Order";
+        showModal = true;
+        master = await _billing.GetbyId(id);
+        StateHasChanged();
+    }
+    void ModalCancel()
+    {
+
+        showModal = false;
+    }
+    async void ModalOk()
+    {
+        if (deliveryboyId == string.Empty)
+        {
+            toastService.ShowInfo("Choose DeliveryBoy.");
+        }
+        else
+        {
+            master.UserId = deliveryboyId;
+            master.IsActive = isActive;
+            //master.DeliveredDate = DateTime.Now;
+            var result = await _billing.Update(master);
+            if (result.IsSuccessStatusCode)
+            {
+                toastService.ShowSuccess("Successfully Assign");
+            }
+        }
+        listOrderMaster = await _billing.GetAllOrderAdmin();
+        StateHasChanged();
+    }
+    string FormatAsUSD(object value)
+    {
+        return ((double)value).ToString("C0", CultureInfo.CreateSpecificCulture("en-US"));
+    }
+}

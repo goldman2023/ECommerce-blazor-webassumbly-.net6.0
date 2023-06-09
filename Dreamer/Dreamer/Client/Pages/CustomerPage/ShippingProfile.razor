@@ -1,0 +1,168 @@
+﻿@page "/customer/shippingprofile"
+@inject IStringLocalizer<Resource> localizer
+@inject IShippingAddress _shipping
+@inject IState _state
+@inject ICities _cities
+@inject IToastService toastService
+@using System.Security.Claims
+@attribute [Authorize]
+
+
+
+<div class="dashboard-group">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-12">
+						<div class="user-dt">
+							@*<div class="user-img">
+								<img src="images/avatar/img-5.jpg" alt="">
+								<div class="img-add">													
+									<input type="file" id="file">
+									<label for="file"><i class="uil uil-camera-plus"></i></label>
+								</div>
+							</div>*@
+                            <AuthorizeView>
+                            <Authorized>
+
+							<h4>@context.User.FindFirst(ClaimTypes.Email).Value</h4>
+                            </Authorized>
+                            </AuthorizeView>
+							@*<p>+91999999999<a href="#"><i class="uil uil-edit"></i></a></p>*@
+							@*<div class="earn-points"><img src="images/Dollar.svg" alt="">Points : <span>20</span></div>*@
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+<section class="">
+<div class="container">
+<div class="row">
+<div class="col-lg-3 col-md-4">
+<div class="left-side-tabs">
+    <CustomerMenu />
+</div>
+</div>
+
+
+
+
+<div class="col-lg-9 col-md-8">
+						<div class="dashboard-right">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="main-title-tab">
+										<h4><i class="uil uil-heart"></i>Shipping Profile</h4>
+									</div>
+								</div>								
+								<div class="col-lg-12 col-md-12">
+									<div class="pdpt-bg">
+										<div class="wishlist-body-dtt">
+											<EditForm Model="@master" OnValidSubmit="Save">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["First Name"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.FirstName" placeholder="" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Last Name"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.LastName" placeholder="" type="text">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Email"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.Email" placeholder="" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">@localizer["Phone"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.PhoneNo" placeholder="" type="text">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">@localizer["Mobile No"] <span class="required">*</span></label>
+<input class="form-control border-form-control" @bind="master.MobileNo" placeholder="" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label"> @localizer["Zip Code"] <span class="required">*</span></label>
+<input class="form-control border-form-control" value="" placeholder="123456" type="number">
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label">Address 1 <span class="required">*</span></label>
+<textarea class="form-control border-form-control" @bind="master.AddressName"></textarea>
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12 text-right" style="padding:10px;">
+<button type="submit" class="btn btn-success btn-lg"> Save Changes </button>
+</div>
+</div>
+
+</EditForm>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+</div>
+</div>
+</section>
+@code {
+    [CascadingParameter]
+        public Task<AuthenticationState> authenticationState { get; set; }
+        string Id;
+    ShippingAddress master = new ShippingAddress();
+    IList<State> listStae = new List<State>();
+    IList<Cities> listCities = new List<Cities>();
+    protected async override void OnInitialized()
+    {
+        await LoadData();
+    }
+    private async Task LoadData()
+    {
+        var authState = await authenticationState;
+        var user = authState.User;
+        Id = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+        master = await _shipping.GetAll( Convert.ToInt32(Id));
+        //listStae = await _state.GetAll();
+        //listCities = await _cities.GetAll();
+        StateHasChanged();
+    }
+    private async Task Save()
+    {
+            master.CountryId = 1;
+            master.StateId = 6;
+            master.CitiesId = 1;
+            master.AddedDate = DateTime.Now;
+                var result = await _shipping.Save(master);
+
+                if (result.IsSuccessStatusCode)
+                {
+                    toastService.ShowSuccess("Successfully Saved.");
+                    await LoadData();
+                }
+                else
+                {
+                    toastService.ShowSuccess("Already Exists.");
+                }
+    }
+}

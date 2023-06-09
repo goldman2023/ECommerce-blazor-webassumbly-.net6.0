@@ -1,0 +1,17 @@
+﻿@page "/payment-success"
+@inject ILocalStorageService localStorage
+@attribute [Authorize]
+
+<div class="container">
+    <h3>Thank You !</h3>
+</div>
+
+@code {
+    private bool IsPaymentComplete { get; set; } = false;
+    private int OrderId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+    }
+}

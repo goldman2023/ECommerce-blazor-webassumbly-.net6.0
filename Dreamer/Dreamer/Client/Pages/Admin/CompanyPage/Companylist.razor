@@ -1,0 +1,178 @@
+﻿@page "/page/companylist"
+@layout AdminLayout
+@inject ICompany _setting
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+
+<div class="row">
+
+
+<div class="col-lg-12 mx-auto">
+<div class="row no-gutters">
+<div class="col-md-12">
+<div class="card card-body account-right">
+<div class="widget">
+<div class="section-header">
+<h5 class="heading-design-h5">
+App Setting
+</h5>
+</div>
+<EditForm Model="master" OnValidSubmit="HandleSubmit">
+                                            <DataAnnotationsValidator />
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label">Cover</label>
+<label class="form-label">Cover</label>
+												<InputFile OnChange="OnFileChange" />
+                                                @if(master.Image !=null)
+                                {
+                                    <img src="@master.Image" width="40" height="60">
+                                }
+											<ValidationMessage For="@(() => master.Image)" />
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label">App Name</label>
+<input class="form-control border-form-control" @bind="master.Name" type="text">
+<ValidationMessage For="@(() => master.Name)" />
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">Phone <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.PhoneNo" type="text">
+<ValidationMessage For="@(() => master.PhoneNo)" />
+</div>
+</div>
+<div class="col-sm-6">
+ <div class="form-group">
+<label class="control-label">Mobile <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.MobileNo" type="text">
+<ValidationMessage For="@(() => master.MobileNo)" />
+</div>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label">Email <span class="required"></span></label>
+<input type="text" class="form-control border-form-control" @bind="master.Email"></input>
+<ValidationMessage For="@(() => master.Email)" />
+</div>
+</div>
+
+</div>
+<div class="row">
+<div class="col-sm-12">
+<div class="form-group">
+<label class="control-label">Address <span class="required"></span></label>
+<input type="text" class="form-control border-form-control" @bind="master.Address"></input>
+<ValidationMessage For="@(() => master.Address)" />
+</div>
+</div>
+
+</div>
+
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">Facebook Link <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.FacebookLink" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+ <div class="form-group">
+<label class="control-label">Twitter Link <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.TwitterLink" type="text">
+</div>
+</div>
+</div>
+
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">InstagramLink <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.InstagramLink" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+ <div class="form-group">
+<label class="control-label">Tiktok Link <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.TiktokLInk" type="text">
+</div>
+</div>
+</div>
+
+
+
+
+<div class="row">
+<div class="col-sm-6">
+<div class="form-group">
+<label class="control-label">Sologan <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.Sologan" type="text">
+</div>
+</div>
+<div class="col-sm-6">
+ <div class="form-group">
+<label class="control-label">Seo <span class="required"></span></label>
+<input class="form-control border-form-control" @bind="master.Seo" type="text">
+</div>
+</div>
+</div>
+    <div class="row">
+<div class="col-sm-12 text-right" style="margin-top:10px;">
+<button type="submit" class="btn btn-success btn-lg"> Save </button>
+</div>
+</div>
+</EditForm>
+
+
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+@code {
+    Company master = new Company();
+    protected async override void OnInitialized()
+    {
+        await LoadData();
+    }
+    private async Task LoadData()
+    {
+        master = await _setting.GetbyId(Convert.ToInt32(1));
+        StateHasChanged();
+    }
+    private async Task HandleSubmit()
+    {
+            var result = await _setting.Update(master);
+            toastService.ShowSuccess("Successfully Updated");
+                await LoadData();
+    }
+    async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        var format = "image/png";
+        var resizedImage = await e.File.RequestImageFileAsync(format, 300, 300);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        if (imageData == null)
+        {
+            master.Image = string.Empty;
+        }
+        else
+        {
+            master.Image = imageData;
+        }
+    }
+}

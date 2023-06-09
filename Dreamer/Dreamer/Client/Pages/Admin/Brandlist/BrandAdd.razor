@@ -1,0 +1,110 @@
+﻿@page "/page/brandadd"
+@layout AdminLayout
+@inject IBrand _area
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Brand</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Setting</a></li>
+                            <li class="breadcrumb-item"><a>Brand</a></li>
+                            <li class="breadcrumb-item active">Add Brand</li>
+                        </ol>
+                        <div class="row">
+							<div class="col-lg-5 col-md-6">
+								<div class="card card-static-2 mb-30">
+									<div class="card-title-2">
+										<h4>Add New Brand</h4>
+									</div>
+									<div class="card-body-table">
+										<EditForm Model="master" OnValidSubmit="Save">
+                                            <DataAnnotationsValidator />
+										<div class="news-content-right pd-20">
+                                            <div class="form-group">
+												<label class="form-label">Cover</label>
+
+                                                <InputFile id="file-upload" OnChange="@OnInputFileChange" multiple/>
+												@*<InputFile OnChange="OnFileChange" />
+                                                @if(master.Image !=null)
+                                {
+                                    <img src="@master.Image" width="40" height="60">
+                                }*@
+											<ValidationMessage For="@(() => master.Image)" />
+                                            </div>
+											<div class="form-group">
+												<label class="form-label">Name*</label>
+												<input type="text" class="form-control" @bind="master.BrandName" placeholder="Brand Name">
+											<ValidationMessage For="@(() => master.BrandName)" />
+                                            </div>
+											<div class="form-group">
+												<label class="form-label">Quantity</label>
+												<input type="number" @bind="master.Quantity" class="form-control">
+											</div>
+											<button class="save-btn hover-btn" type="submit">Save</button>
+										</div>
+										</EditForm>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+
+@code {
+    Brand master = new Brand();
+    private string message = "No file(s) selected";
+    IReadOnlyList<IBrowserFile> selectedFiles;
+    protected async override void OnInitialized()
+    {
+
+    }
+    private async Task Save()
+    {
+        foreach (var file in selectedFiles)
+        {
+            using (var ms = new MemoryStream())
+            {
+                await file.OpenReadStream().CopyToAsync(ms);
+
+                var uploadedFile = new Brand();
+                uploadedFile.Image = file.Name;
+                //uploadedFile.FileContent = ms.ToArray();
+                master.Image = uploadedFile.Image;
+            }
+        }
+        var result = await _area.Save(master);
+
+        if (result.IsSuccessStatusCode)
+        {
+            toastService.ShowSuccess("Successfully Saved");
+            NavigationManager.NavigateTo("/page/brandlist");
+        }
+        else
+        {
+            toastService.ShowInfo("Already Exists.");
+        }
+    }
+    private void OnInputFileChange(InputFileChangeEventArgs e)
+    {
+        selectedFiles = e.GetMultipleFiles();
+        message = $"{selectedFiles.Count} file(s) selected";
+        this.StateHasChanged();
+    }
+    async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        var format = "image/png";
+        var resizedImage = await e.File.RequestImageFileAsync(format, 300, 300);
+        var buffer = new byte[resizedImage.Size];
+        await resizedImage.OpenReadStream().ReadAsync(buffer);
+        var imageData = $"data:{format};base64,{Convert.ToBase64String(buffer)}";
+        if (imageData == null)
+        {
+            master.Image = string.Empty;
+        }
+        else
+        {
+            master.Image = imageData;
+        }
+    }
+}

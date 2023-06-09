@@ -1,0 +1,91 @@
+﻿@page "/page/productlist"
+@layout AdminLayout
+@inject IProduct _product
+@inject ICategory _category
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+@inject IToastService toastService
+@attribute [Authorize]
+
+<div class="container-fluid">
+                        <h2 class="mt-30 page-title">Product</h2>
+                        <ol class="breadcrumb mb-30">
+                            <li class="breadcrumb-item"><a>Product</a></li>
+                            <li class="breadcrumb-item active">Product</li>
+                        </ol>
+                        <div class="row justify-content-between">
+							<div class="col-lg-12 col-md-12">
+								<div class="card card-static-2 mt-30 mb-30">
+									<div class="card-title-2">
+																		<a href="/page/productadd" class="add-btn hover-btn">Add New Product</a>
+									</div>
+									<div class="card-body-table">
+										<div class="table-responsive">
+                                            @if(listProduct == null)
+                        {
+                            
+                        }
+                        else
+                        {
+                            <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" AllowSorting="true" PageSize="20" AllowPaging="true" PagerHorizontalAlign="HorizontalAlign.Left" ShowPagingSummary="true"
+        Data="@listProduct" TItem="ProductView" ColumnWidth="300px" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="ProductView" Title="Photo" Frozen="true" Sortable="false" Filterable="false" Width="60px" >
+                <Template Context="data">
+                    <RadzenImage Path="@data.Image" style="width: 40px; height: 40px; border-radius: 8px;" />
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="ProductView" Property="Name" Title="Name" Frozen="true" Width="180px" />
+            <RadzenDataGridColumn TItem="ProductView" Property="CategoryName" Title="Category" Frozen="true" Width="100px" />
+            <RadzenDataGridColumn TItem="ProductView" Property="OriginalPrice" Title="OriginalPrice" Frozen="true" Width="100px" />
+            <RadzenDataGridColumn TItem="ProductView" Property="SalePrice" Title="SalePrice" Frozen="true" Width="100px" />
+            <RadzenDataGridColumn TItem="ProductView" Property="IsActive" Title="IsActive" Frozen="true" Width="60px" />
+            <RadzenDataGridColumn TItem="ProductView" Title="Action" Frozen="true" Sortable="false" Filterable="false" Width="80px" >
+                <Template Context="data">
+                    <center>
+                                     <a href="/page/productimage/@data.ProductId" class="edit-btn" title="Image"><i class="fas fa-add-produc-imgs"></i>Image</a> |
+															<a href="/page/productedit/@data.ProductId" class="edit-btn" title="Edit"><i class="fas fa-edit"></i></a> |
+                                                            <a @onclick="() => Delete(data)" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+														</center>
+                </Template>
+            </RadzenDataGridColumn>
+            
+        </Columns>
+    </RadzenDataGrid>
+}
+										</div>
+									</div>
+								</div>
+							</div>
+                        </div>
+                    </div>
+@code {
+	IList<ProductView> listProduct = new List<ProductView>();
+	string Name = string.Empty;
+	protected async override void OnInitialized()
+	{
+		await LoadData();
+	}
+	private async Task LoadData()
+	{
+		listProduct = await _product.GetAll();
+        StateHasChanged();
+    }
+    async void Delete(ProductView productView)
+    {
+        bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+        if (confirmed)
+        {
+            var result = await _product.Delete(productView);
+            if (result.IsSuccessStatusCode)
+            {
+				toastService.ShowSuccess("Successfully Deleted.");
+                await LoadData();
+            }
+            else
+            {
+				toastService.ShowError("Cannot be delete. already in used.");
+            }
+        }
+    }
+}
